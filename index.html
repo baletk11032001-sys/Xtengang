@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>ระบบเช็คชื่อ • เช็คของ แก๊งค์</title>
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-0:#2a2a2a;
+    --bg-1:#333333;
+    --wood:#242424;
+    --surface:#3a3a3a;
+    --surface-2:#464646;
+    --border:#000000;
+    --border-soft:#000000;
+    --text:#ffffff;
+    --text-dim:#e0e0e0;
+    --text-faint:#bdbdbd;
+    --gold:#9e9e9e;
+    --gold-soft:#ffffff;
+    --copper:#8a8a8a;
+    --green:#6a9a5e;
+    --green-bg:#22301f;
+    --red:#c1573f;
+    --red-bg:#331f1a;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans Thai', sans-serif;
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px),
+      radial-gradient(1200px 800px at 15% -10%, #333333 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-0));
+    color:var(--text);
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3,h4{
+    font-family:'Noto Serif Thai', serif;
+    margin:0;
+    font-weight:600;
+    color:var(--gold-soft);
+    letter-spacing:0.2px;
+  }
+  p{margin:0;}
+  ::selection{background:var(--gold);color:#000000;}
+
+  .screen{min-height:100vh;display:none;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* ---------- Landing ---------- */
+  #screen-landing{align-items:center; padding:32px 16px 60px;}
+  .landing-wrap{width:100%;max-width:560px;margin:0 auto;}
+  .landing-mark{
+    display:flex;align-items:center;gap:14px;margin-bottom:28px;
+  }
+  .landing-mark .glyph{
+    width:52px;height:52px;border-radius:10px;
+    background:linear-gradient(145deg, var(--surface-2), var(--surface));
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;flex-shrink:0;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .landing-mark h1{font-size:22px;line-height:1.3;}
+  .landing-mark span{color:var(--text-dim);font-size:13px;}
+
+  .info-card{
+    background:linear-gradient(160deg, var(--surface), var(--wood));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .info-card h2{font-size:16px;margin-bottom:10px;}
+  .info-card p{color:var(--text-dim);font-size:14px;line-height:1.7;}
+
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0;}
+  .stat-box{
+    background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:var(--radius-sm);padding:14px 10px;text-align:center;
+  }
+  .stat-box .num{font-family:'Noto Serif Thai',serif;font-size:22px;color:var(--gold-soft);font-weight:700;}
+  .stat-box .lbl{font-size:11.5px;color:var(--text-faint);margin-top:2px;}
+
+  .btn{
+    font-family:inherit;font-size:14.5px;font-weight:600;
+    border-radius:var(--radius-sm);border:1px solid transparent;
+    padding:13px 18px;cursor:pointer;transition:transform .08s ease, filter .15s ease, background .15s ease;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:linear-gradient(180deg, var(--gold-soft), var(--gold));color:#000000;border:1px solid #000000;box-shadow:0 3px 0 #000000;}
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-block{width:100%;}
+  .btn-outline{background:transparent;border-color:var(--border);color:var(--text-dim);}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold-soft);}
+  .btn-ghost{background:transparent;color:var(--text-faint);border:none;text-decoration:underline;text-underline-offset:3px;padding:6px;font-size:13px;}
+  .btn-danger{background:var(--red-bg);color:#f0b6a4;border:1px solid #5a2f24;}
+  .btn-sm{padding:8px 12px;font-size:13px;}
+
+  .landing-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+  .admin-link-wrap{text-align:center;margin-top:22px;}
+
+  /* ---------- Login screens ---------- */
+  .center-screen{align-items:center;justify-content:center;padding:24px;}
+  .login-card{
+    width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);
+  }
+  .login-card h2{font-size:18px;margin-bottom:6px;}
+  .login-card .sub{color:var(--text-dim);font-size:13px;margin-bottom:18px;display:block;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;}
+  .input, select.input, input.input, textarea.input{
+    width:100%;background:var(--bg-0);border:1px solid var(--border);color:var(--text);
+    border-radius:var(--radius-sm);padding:11px 12px;font-size:14.5px;font-family:inherit;
+  }
+  .input:focus{outline:none;border-color:var(--gold);}
+  .err-msg{color:#e18a72;font-size:13px;margin-top:8px;min-height:16px;}
+
+  /* ---------- App shell ---------- */
+  #screen-app{padding:0;}
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(180deg, var(--wood), var(--bg-1));
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px 10px;max-width:980px;margin:0 auto;
+  }
+  .topbar h1{font-size:16px;}
+  .topbar .who{font-size:11.5px;color:var(--text-faint);margin-top:1px;}
+  .logout-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:7px 12px;font-size:12.5px;cursor:pointer;}
+  .logout-btn:hover{color:var(--red);border-color:#5a2f24;}
+
+  .tabs{
+    display:flex;gap:4px;overflow-x:auto;padding:0 12px 10px;max-width:980px;margin:0 auto;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    flex-shrink:0;background:transparent;border:none;color:var(--text-faint);
+    font-family:'Noto Sans Thai',sans-serif;font-size:13.5px;font-weight:600;
+    padding:8px 13px;border-radius:8px 8px 0 0;cursor:pointer;
+    border-bottom:2px solid transparent;white-space:nowrap;
+  }
+  .tab-btn.active{color:var(--gold-soft);border-bottom:2px solid var(--gold);background:rgba(207,158,63,0.08);}
+
+  .datebar{
+    display:flex;align-items:center;gap:10px;padding:10px 16px;max-width:980px;margin:0 auto;
+    border-top:1px solid var(--border-soft);
+  }
+  .datebar label{font-size:12.5px;color:var(--text-dim);}
+  .datebar input[type=date]{
+    background:var(--bg-0);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13.5px;
+  }
+
+  .content{max-width:980px;margin:0 auto;padding:16px 16px 60px;width:100%;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  }
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+  .card-head h3{font-size:15px;}
+  .muted{color:var(--text-faint);font-size:13px;}
+
+  .empty-state{
+    text-align:center;padding:36px 16px;color:var(--text-faint);font-size:13.5px;
+    border:1px dashed var(--border);border-radius:var(--radius-sm);
+  }
+
+  /* member row */
+  .row-list{display:flex;flex-direction:column;gap:8px;}
+  .member-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--bg-0);border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+    padding:11px 12px;
+  }
+  .member-name{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
+  .avatar{
+    width:32px;height:32px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gold-soft);
+    border:1px solid var(--border);flex-shrink:0;font-family:'Noto Serif Thai',serif;
+  }
+  .avatar-photo{background-size:cover;background-position:center;color:transparent;}
+  .avatar-edit-btn{
+    background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:12px;
+    padding:2px 4px;margin-left:-2px;
+  }
+  .avatar-edit-btn:hover{color:var(--gold-soft);}
+  .role-badge{
+    font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;
+    background:var(--surface-2);color:var(--gold-soft);border:1px solid var(--border);
+    margin-left:8px;
+  }
+  .row-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;}
+
+  .pill{
+    font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:100px;
+    border:1px solid var(--border);cursor:default;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .pill-sent{background:var(--green-bg);color:#a9d19a;border-color:#3a5a34;}
+  .pill-notsent{background:var(--red-bg);color:#e3a794;border-color:#5a2f24;}
+  .pill.clickable{cursor:pointer;}
+  .pill.clickable:active{transform:scale(0.96);}
+
+  .amount-input, .item-qty-input{
+    width:85px;background:var(--bg-0);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:6px 8px;font-family:inherit;font-size:13px;text-align:right;
+  }
+
+  /* item chips for send-items */
+  .member-block{background:var(--bg-0);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;}
+  .member-block-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .item-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--border);border-radius:100px;padding:6px 11px 6px 8px;
+    font-size:12.5px;font-weight:500;background:var(--surface);color:var(--text-dim);cursor:default;
+  }
+  .item-chip.clickable{cursor:pointer;}
+  .item-chip.clickable:active{transform:scale(0.96);}
+  .item-chip.sent{background:var(--green-bg);color:#a9d19a;border-color:#3a5a34;}
+  .item-chip.notsent{background:var(--surface);color:var(--text-faint);}
+  
+  .item-chip .thumb{width:18px;height:18px;border-radius:4px;object-fit:cover;}
+  .item-chip .thumb-large{width:42px;height:42px;border-radius:6px;object-fit:cover;border:1px solid var(--border);}
+
+  /* item detail cards for send-items (target + quantity per item, per member) */
+  .item-detail-grid{
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:12px;
+  }
+  .item-detail-card{
+    background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+    padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+  }
+  .item-detail-card.sent{border-color:#3a5a34;}
+  .item-detail-card .item-detail-head{
+    display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px;color:var(--text);
+  }
+  .item-detail-card .field-row{display:flex;flex-direction:column;gap:5px;}
+  .item-detail-card .field-row label{font-size:11.5px;color:var(--text-faint);}
+  .item-detail-card .field-row input{
+    width:100%;background:var(--bg-0);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:9px 10px;font-family:inherit;font-size:14.5px;box-sizing:border-box;
+  }
+  .item-detail-card .field-row input:focus{outline:none;border-color:var(--gold);}
+  .item-detail-card .field-row strong{font-size:14.5px;color:var(--gold-soft);}
+  .item-detail-card .shortfall-note{font-size:12px;margin-top:-2px;}
+  
+  .def-icon{width:17px;height:17px;border-radius:4px;object-fit:cover;vertical-align:-3px;margin-right:1px;border:1px solid var(--border);}
+  .def-icon-lg{width:40px;height:40px;border-radius:8px;object-fit:cover;vertical-align:-11px;margin-right:6px;border:1px solid var(--border);}
+  .def-icon-xl{width:72px;height:72px;border-radius:12px;object-fit:cover;border:1px solid var(--border);font-size:28px;}
+  .icon-placeholder{display:inline-flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--gold-soft);font-weight:700;font-family:'Noto Serif Thai',serif;font-size:9px;}
+  .def-icon-lg.icon-placeholder{font-size:16px;}
+
+  .table-wrap{overflow-x:auto;border:1px solid var(--border-soft);border-radius:var(--radius-sm);}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border-soft);white-space:nowrap;}
+  th{color:var(--text-faint);font-weight:600;font-size:11.5px;text-transform:none;background:var(--bg-0);}
+  tr:last-child td{border-bottom:none;}
+  td.center, th.center{text-align:center;}
+
+  .history-item{padding:12px 0;border-bottom:1px solid var(--border-soft);}
+  .history-item:last-child{border-bottom:none;}
+  .history-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:3px;}
+  .history-actor{color:var(--gold-soft);font-weight:600;}
+  .history-time{color:var(--text-faint);font-size:11.5px;flex-shrink:0;}
+  .history-detail{color:var(--text-dim);font-size:12.5px;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  @media(min-width:560px){.stat-grid{grid-template-columns:repeat(4,1fr);}}
+  .stat-card{background:var(--bg-0);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px 12px;}
+  .stat-card .num{font-family:'Noto Serif Thai',serif;font-size:24px;color:var(--gold-soft);font-weight:700;}
+  .stat-card .lbl{font-size:12px;color:var(--text-faint);margin-top:4px;}
+
+  .inline-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+  .inline-form .field{margin-bottom:0;flex:1;min-width:120px;}
+
+  /* modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(10,8,5,0.65);display:none;
+    align-items:center;justify-content:center;z-index:100;padding:16px;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;width:100%;max-width:420px;box-shadow:var(--shadow);max-height:85vh;overflow-y:auto;
+  }
+  .modal h3{font-size:16px;margin-bottom:14px;}
+  .modal-close-row{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .item-manage-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-soft);}
+  .item-manage-row:last-child{border-bottom:none;}
+
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--surface-2);border:1px solid var(--gold);color:var(--gold-soft);
+    padding:11px 18px;border-radius:100px;font-size:13px;z-index:200;
+    box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  a{color:var(--gold-soft);}
+  @media(max-width:420px){
+    .stat-row{grid-template-columns:repeat(3,1fr);}
+    .stat-box .num{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-wrap">
+    <div class="landing-mark">
+      <div class="glyph">⛏️</div>
+      <div>
+        <h1>ระบบเช็คชื่อ • เช็คของ</h1>
+        <span>คลังแก๊งค์ &amp; บัญชีประจำวัน</span>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h2>เกี่ยวกับระบบนี้</h2>
+      <p>
+        ระบบสำหรับสมาชิกแก๊งค์ใช้เช็คชื่อและเช็คของประจำวัน บันทึกการส่งเงินและส่งของ
+        (ปูน เพชร ทอง ทองแดง เหล็ก ไม้) พร้อมดูสรุปคลังแก๊งค์และประวัติการแก้ไขทั้งหมดแบบเรียลไทม์
+        กดปุ่ม "เข้าสู่ระบบ" ด้านล่างแล้วเลือกชื่อของคุณเพื่อเริ่มใช้งาน
+      </p>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num" id="landingMemberCount">–</div><div class="lbl">สมาชิก</div></div>
+        <div class="stat-box"><div class="num" id="landingItemCount">–</div><div class="lbl">ประเภทของ</div></div>
+        <div class="stat-box"><div class="num" id="landingTodaySent">–</div><div class="lbl">ส่งวันนี้</div></div>
+      </div>
+    </div>
+
+    <div class="landing-actions">
+      <button class="btn btn-primary btn-block" id="btnGoKioskLogin">เข้าสู่ระบบสมาชิก</button>
+    </div>
+
+    <div class="admin-link-wrap">
+      <button class="btn-ghost" id="btnGoAdminLogin">เข้าสู่ระบบผู้ดูแลระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ KIOSK LOGIN ============ -->
+<div id="screen-kiosk-login" class="screen center-screen">
+  <div class="login-card">
+    <h2>เข้าสู่ระบบสมาชิก</h2>
+    <span class="sub">พิมพ์ชื่อของคุณจากรายชื่อสมาชิก</span>
+    <div class="field">
+      <label for="kioskNameInput">ชื่อสมาชิก</label>
+      <input class="input" id="kioskNameInput" placeholder="พิมพ์ชื่อของคุณ...">
+    </div>
+    <div class="err-msg" id="kioskLoginErr"></div>
+    <div class="inline-form">
+      <button class="btn btn-outline" id="btnKioskBack">ย้อนกลับ</button>
+      <button class="btn btn-primary" style="flex:1" id="btnKioskEnter">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN LOGIN ============ -->
+<div id="screen-admin-login" class="screen center-screen">
+  <div class="login-card">
+    <h2>เข้าสู่ระบบผู้ดูแลระบบ</h2>
+    <span class="sub">กรอกรหัสผ่านผู้ดูแลระบบ</span>
+    <div class="field">
+      <label for="adminPassInput">รหัสผ่าน</label>
+      <input class="input" type="password" id="adminPassInput" placeholder="••••••••">
+    </div>
+    <div class="err-msg" id="adminLoginErr"></div>
+    <div class="inline-form">
+      <button class="btn btn-outline" id="btnAdminBack">ย้อนกลับ</button>
+      <button class="btn btn-primary" style="flex:1" id="btnAdminEnter">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="screen-app" class="screen">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1 id="appTitle">แก๊งค์</h1>
+        <div class="who" id="appWho"></div>
+      </div>
+      <button class="logout-btn" id="btnLogout">ออกจากระบบ</button>
+    </div>
+    <div class="tabs" id="tabsRow"></div>
+    <div class="datebar" id="dateBar">
+      <label for="datePicker">วันที่</label>
+      <input type="date" id="datePicker">
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- generic modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<script>
+/* =========================================================
+   LOCAL STORE (เก็บข้อมูลในเบราว์เซอร์ด้วย localStorage แทน Firebase)
+   ========================================================= */
+const LocalStore = (function(){
+  const KEY = 'gang_warehouse_data_v1';
+  let data = {};
+  const listeners = [];
+  const SERVER_TS = {__sentinel:'ts'};
+  const DELETE_FIELD = {__sentinel:'delete'};
+
+  function load(){
+    try{ data = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }
+    catch(e){ data = {}; }
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(data)); }
+    catch(e){
+      console.error('localStorage save failed', e);
+      reportDbError({code:'storage-full', message:'พื้นที่จัดเก็บในเบราว์เซอร์เต็ม (ลองลดขนาดรูปภาพ)'});
+    }
+  }
+  function genId(){
+    return 'id_' + Date.now().toString(36) + Math.random().toString(36).slice(2,9);
+  }
+  function resolveValue(v){
+    if(v === SERVER_TS) return {__ts: Date.now()};
+    return v;
+  }
+  function applyWrite(col, id, obj, merge){
+    data[col] = data[col] || {};
+    const base = merge && data[col][id] ? {...data[col][id]} : {};
+    Object.keys(obj).forEach(k=>{
+      if(obj[k] === DELETE_FIELD) delete base[k];
+      else base[k] = resolveValue(obj[k]);
+    });
+    data[col][id] = base;
+  }
+  function hydrate(d){
+    const out = {};
+    Object.keys(d).forEach(k=>{
+      const v = d[k];
+      if(v && typeof v === 'object' && typeof v.__ts === 'number'){
+        const ms = v.__ts;
+        out[k] = {toDate:()=>new Date(ms), toMillis:()=>ms};
+      } else out[k] = v;
+    });
+    return out;
+  }
+  function makeDoc(col, id, raw){
+    return {id, ref:{col, id}, data:()=>hydrate(raw)};
+  }
+  function runQuery(q){
+    let docs = Object.keys(data[q.col] || {}).map(id=>makeDoc(q.col, id, data[q.col][id]));
+    if(q.whereField){
+      docs = docs.filter(d=>d.data()[q.whereField] === q.whereValue);
+    }
+    if(q.orderField){
+      const dir = q.orderDir === 'desc' ? -1 : 1;
+      const val = d=>{
+        const v = d.data()[q.orderField];
+        return v && v.toMillis ? v.toMillis() : (v || 0);
+      };
+      docs.sort((a,b)=> (val(a) - val(b)) * dir);
+    }
+    if(q.limitN) docs = docs.slice(0, q.limitN);
+    return {docs};
+  }
+  function notifyAll(){
+    listeners.slice().forEach(l=>{
+      try{ l.cb(runQuery(l.q)); }catch(e){ console.error(e); }
+    });
+  }
+  function afterWrite(){
+    save();
+    setTimeout(notifyAll, 0);
+  }
+
+  function Query(col, extra){
+    this.q = Object.assign({col}, extra || {});
+  }
+  Query.prototype.where = function(f, op, v){ return new Query(this.q.col, {...this.q, whereField:f, whereValue:v}); };
+  Query.prototype.orderBy = function(f, dir){ return new Query(this.q.col, {...this.q, orderField:f, orderDir:dir}); };
+  Query.prototype.limit = function(n){ return new Query(this.q.col, {...this.q, limitN:n}); };
+  Query.prototype.get = function(){ return Promise.resolve(runQuery(this.q)); };
+  Query.prototype.onSnapshot = function(cb){
+    const l = {q:this.q, cb};
+    listeners.push(l);
+    setTimeout(()=>cb(runQuery(l.q)), 0);
+    return ()=>{ const i = listeners.indexOf(l); if(i>=0) listeners.splice(i,1); };
+  };
+
+  function Collection(col){
+    Query.call(this, col);
+    this.col = col;
+  }
+  Collection.prototype = Object.create(Query.prototype);
+  Collection.prototype.doc = function(id){
+    const col = this.col;
+    const docId = id || genId();
+    return {
+      id: docId, col,
+      set(obj, opts){ applyWrite(col, docId, obj, !!(opts && opts.merge)); afterWrite(); return Promise.resolve(); },
+      update(obj){
+        if(!(data[col] && data[col][docId])) return Promise.reject({code:'not-found', message:'ไม่พบเอกสาร'});
+        applyWrite(col, docId, obj, true); afterWrite(); return Promise.resolve();
+      },
+      delete(){ if(data[col]) delete data[col][docId]; afterWrite(); return Promise.resolve(); }
+    };
+  };
+  Collection.prototype.add = function(obj){
+    const ref = this.doc();
+    return ref.set(obj).then(()=>ref);
+  };
+
+  const database = {
+    collection(name){ return new Collection(name); },
+    batch(){
+      const ops = [];
+      return {
+        set(ref, obj, opts){ ops.push(()=>applyWrite(ref.col, ref.id, obj, !!(opts && opts.merge))); },
+        delete(ref){ ops.push(()=>{ if(data[ref.col]) delete data[ref.col][ref.id]; }); },
+        commit(){ ops.forEach(f=>f()); afterWrite(); return Promise.resolve(); }
+      };
+    }
+  };
+
+  load();
+  // ซิงค์ระหว่างแท็บของเบราว์เซอร์เดียวกัน
+  window.addEventListener('storage', e=>{
+    if(e.key === KEY){ load(); notifyAll(); }
+  });
+
+  return {db: database, FieldValue: {serverTimestamp:()=>SERVER_TS, delete:()=>DELETE_FIELD}};
+})();
+const db = LocalStore.db;
+const FieldValue = LocalStore.FieldValue;
+
+const ADMIN_PASSWORD = "Admin1234";
+const GUILD_NAME = "แก๊งค์";
+
+const DEFAULT_ITEMS = [
+  {key:"money",   name:"เงิน",     order:1},
+  {key:"cement",  name:"ปูน",      order:2},
+  {key:"diamond", name:"เพชร",     order:3},
+  {key:"gold",    name:"ทอง",      order:4},
+  {key:"copper",  name:"ทองแดง",   order:5},
+  {key:"iron",    name:"เหล็ก",    order:6},
+  {key:"wood",    name:"ไม้",      order:7},
+];
+
+const ROLES = ["หัวหน้า", "รองหัวหน้า", "เหรัญญิก", "สมาชิก"];
+
+const DEFAULT_WEAPONS = ["Dagger", "Knife", "Poolcue", "Bottle"];
+
+const TABS = [
+  {key:"dashboard",  label:"แดชบอร์ด",      adminOnly:true,  needsDate:false},
+  {key:"members",    label:"สมาชิก",         adminOnly:false, needsDate:false},
+  {key:"warehouse",  label:"คลังแก๊งค์",     adminOnly:false, needsDate:false},
+  {key:"money",      label:"เงินแก๊งค์",     adminOnly:false, needsDate:true},
+  {key:"sendMoney",  label:"ส่งเงิน",        adminOnly:true,  needsDate:true},
+  {key:"sendItems",  label:"ส่งของ",         adminOnly:true,  needsDate:true},
+  {key:"summary",    label:"สรุปของทั้งหมด", adminOnly:false, needsDate:true},
+  {key:"borrow",     label:"ยืมของกลางแก๊งค์", adminOnly:false, needsDate:false},
+  {key:"borrowMoney",label:"ยืมเงิน",         adminOnly:false, needsDate:false},
+  {key:"history",    label:"ประวัติ",        adminOnly:false, needsDate:false},
+];
+
+/* ---------------- state ---------------- */
+const state = {
+  screen: 'landing',
+  isAdmin: false,
+  currentMember: null,
+  activeTab: 'members',
+  selectedDate: todayStr(),
+  members: [],
+  itemDefs: [],
+  moneyRecords: [],
+  itemRecords: [],
+  borrowRecords: [],
+  borrowMoneyRecords: [],
+  sendConfirmations: [],
+  ledgerEntries: [],
+  weaponDefs: [],
+  stockAdjustments: [],
+  moneyConfirmations: [],
+  history: [],
+  seededItems: false,
+  moneyItemChecked: false,
+  seededWeapons: false,
+  manageItemsModalOpen: false,
+  manageWeaponsModalOpen: false,
+};
+
+function todayStr(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+/* ---------------- toast ---------------- */
+let toastTimer=null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------------- history logging ---------------- */
+function actorLabel(){
+  if(state.isAdmin) return 'ผู้ดูแลระบบ';
+  if(state.currentMember) return state.currentMember.name;
+  return 'ระบบ';
+}
+function reportDbError(err){
+  console.error(err);
+  const code = err && err.code;
+  let el = document.getElementById('dbErrorBanner');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'dbErrorBanner';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;background:#7a1f1f;color:#fff;padding:10px 14px;font-size:13px;text-align:center;';
+    document.body.appendChild(el);
+  }
+  el.textContent = code === 'permission-denied'
+    ? '⚠️ ไม่สามารถอ่าน/เขียนข้อมูลในเบราว์เซอร์ได้ (permission-denied)'
+    : '⚠️ จัดเก็บข้อมูลไม่สำเร็จ: ' + (code || (err && err.message) || 'ไม่ทราบสาเหตุ');
+}
+window.addEventListener('unhandledrejection', e=>{
+  if(e.reason && e.reason.code) reportDbError(e.reason);
+});
+
+function logHistory(action, detail){
+  db.collection('history').add({
+    actor: actorLabel(),
+    action,
+    detail,
+    ts: FieldValue.serverTimestamp()
+  }).catch(e=>console.error('history log failed', e));
+}
+
+/* ---------------- data listeners ---------------- */
+db.collection('tools').where('type','==','member').onSnapshot(snap=>{
+  state.members = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>{
+    const roleIndexA = ROLES.indexOf(a.role || 'สมาชิก');
+    const roleIndexB = ROLES.indexOf(b.role || 'สมาชิก');
+    const rankA = roleIndexA === -1 ? ROLES.length : roleIndexA;
+    const rankB = roleIndexB === -1 ? ROLES.length : roleIndexB;
+    if(rankA !== rankB) return rankA - rankB;
+    return (a.name||'').localeCompare(b.name||'', 'th');
+  });
+  refreshLandingStats();
+  if(state.screen==='app') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','itemDef').onSnapshot(snap=>{
+  state.itemDefs = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!state.seededItems && snap.docs.length===0){
+    state.seededItems = true;
+    const batch = db.batch();
+    DEFAULT_ITEMS.forEach(it=>{
+      const ref = db.collection('tools').doc();
+      batch.set(ref, {type:'itemDef', ...it});
+    });
+    batch.commit().catch(e=>console.error('seed failed', e));
+  } else if(snap.docs.length>0 && !state.moneyItemChecked){
+    state.moneyItemChecked = true;
+    const hasMoneyItem = state.itemDefs.some(it=>it.name==='เงิน');
+    if(!hasMoneyItem){
+      const minOrder = state.itemDefs.reduce((m,i)=>Math.min(m,i.order||0), 0);
+      db.collection('tools').add({type:'itemDef', key:'money', name:'เงิน', order: minOrder-1})
+        .catch(e=>console.error('add money item failed', e));
+    }
+  }
+  refreshLandingStats();
+  if(state.screen==='app') renderTab();
+  refreshManageItemsModalIfList();
+}, reportDbError);
+
+db.collection('tools').where('type','==','moneyRecord').onSnapshot(snap=>{
+  state.moneyRecords = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  refreshLandingStats();
+  if(state.screen==='app') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','itemRecord').onSnapshot(snap=>{
+  state.itemRecords = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  refreshLandingStats();
+  if(state.screen==='app') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','borrowRecord').onSnapshot(snap=>{
+  state.borrowRecords = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='borrow') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','borrowMoneyRecord').onSnapshot(snap=>{
+  state.borrowMoneyRecords = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && (state.activeTab==='borrowMoney' || state.activeTab==='money')) renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','sendConfirmation').onSnapshot(snap=>{
+  state.sendConfirmations = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='sendItems') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','ledgerEntry').onSnapshot(snap=>{
+  state.ledgerEntries = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='money') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','weaponDef').onSnapshot(snap=>{
+  state.weaponDefs = snap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!state.seededWeapons && snap.docs.length===0){
+    state.seededWeapons = true;
+    const batch = db.batch();
+    DEFAULT_WEAPONS.forEach((name, i)=>{
+      const ref = db.collection('tools').doc();
+      batch.set(ref, {type:'weaponDef', name, order:i+1});
+    });
+    batch.commit().catch(e=>console.error('seed weapons failed', e));
+  }
+  if(state.screen==='app' && state.activeTab==='members') renderTab();
+  refreshManageWeaponsModalIfList();
+}, reportDbError);
+
+db.collection('tools').where('type','==','stockAdjustment').onSnapshot(snap=>{
+  state.stockAdjustments = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='warehouse') renderTab();
+}, reportDbError);
+
+db.collection('tools').where('type','==','moneyConfirmation').onSnapshot(snap=>{
+  state.moneyConfirmations = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='sendMoney') renderTab();
+}, reportDbError);
+
+db.collection('history').orderBy('ts','desc').limit(200).onSnapshot(snap=>{
+  state.history = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  if(state.screen==='app' && state.activeTab==='history') renderTab();
+}, reportDbError);
+
+/* ---------------- landing stats ---------------- */
+function refreshLandingStats(){
+  document.getElementById('landingMemberCount').textContent = state.members.length;
+  const moneyKey = getMoneyItemKey();
+  document.getElementById('landingItemCount').textContent = state.itemDefs.filter(it => it.key !== moneyKey).length;
+  const today = todayStr();
+  const todayMoney = state.moneyRecords.filter(r=>r.date===today && r.status==='sent').length;
+  const todayItems = state.itemRecords.filter(r=>r.date===today && r.status==='sent').length;
+  document.getElementById('landingTodaySent').textContent = todayMoney + todayItems;
+}
+/* ---------------- helpers ---------------- */
+function escapeHtml(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function fmtMoney(n){
+  n = Number(n||0);
+  return n.toLocaleString('th-TH');
+}
+function fmtTimestamp(ts){
+  if(!ts || !ts.toDate) return '';
+  const d = ts.toDate();
+  return d.toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
+}
+function findMoneyRecord(memberId, date){
+  return state.moneyRecords.find(r=>r.memberId===memberId && r.date===date);
+}
+function avatarHtml(m){
+  if(m && m.photoBase64) return `<div class="avatar avatar-photo" style="background-image:url('${m.photoBase64}')"></div>`;
+  return `<div class="avatar">${escapeHtml(((m&&m.name)||'?').charAt(0))}</div>`;
+}
+function canEditProfile(memberId){
+  return state.isAdmin || (state.currentMember && state.currentMember.id===memberId);
+}
+function getMemberWeapons(m){
+  if(!m) return [];
+  if(Array.isArray(m.weapons)) return m.weapons.filter(Boolean);
+  if(m.weapon) return [m.weapon];
+  return [];
+}
+function itemIconLabel(it, large, size){
+  const cls = size==='xl' ? 'def-icon-xl' : (large ? 'def-icon-lg' : 'def-icon');
+  if(it && it.iconImage) return `<img class="${cls}" src="${it.iconImage}">`;
+  const letter = it && it.name ? it.name.charAt(0) : '?';
+  return `<span class="${cls} icon-placeholder">${escapeHtml(letter)}</span>`;
+}
+function findItemRecord(memberId, itemKey, date){
+  return state.itemRecords.find(r=>r.memberId===memberId && r.itemKey===itemKey && r.date===date);
+}
+
+/* ---------------- screen navigation ---------------- */
+function showScreen(name){
+  state.screen = name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+document.getElementById('btnGoKioskLogin').addEventListener('click', ()=>{
+  document.getElementById('kioskNameInput').value='';
+  document.getElementById('kioskLoginErr').textContent='';
+  showScreen('kiosk-login');
+});
+document.getElementById('btnGoAdminLogin').addEventListener('click', ()=>{
+  document.getElementById('adminPassInput').value='';
+  document.getElementById('adminLoginErr').textContent='';
+  showScreen('admin-login');
+});
+document.getElementById('btnKioskBack').addEventListener('click', ()=>showScreen('landing'));
+document.getElementById('btnAdminBack').addEventListener('click', ()=>showScreen('landing'));
+
+document.getElementById('btnKioskEnter').addEventListener('click', ()=>{
+  const name = document.getElementById('kioskNameInput').value.trim();
+  const errEl = document.getElementById('kioskLoginErr');
+  if(!name){ errEl.textContent='กรุณากรอกชื่อ'; return; }
+  const member = state.members.find(m=> (m.name||'').trim() === name);
+  if(!member){ errEl.textContent='ไม่พบชื่อนี้ในรายชื่อสมาชิก กรุณาติดต่อผู้ดูแลระบบ'; return; }
+  state.isAdmin = false;
+  state.currentMember = {id:member.id, name:member.name};
+  enterApp('members');
+});
+document.getElementById('kioskNameInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') document.getElementById('btnKioskEnter').click();
+});
+
+document.getElementById('btnAdminEnter').addEventListener('click', ()=>{
+  const pass = document.getElementById('adminPassInput').value;
+  const errEl = document.getElementById('adminLoginErr');
+  if(pass !== ADMIN_PASSWORD){ errEl.textContent='รหัสผ่านไม่ถูกต้อง'; return; }
+  state.isAdmin = true;
+  state.currentMember = null;
+  enterApp('dashboard');
+});
+document.getElementById('adminPassInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') document.getElementById('btnAdminEnter').click();
+});
+
+document.getElementById('btnLogout').addEventListener('click', ()=>{
+  state.isAdmin=false;
+  state.currentMember=null;
+  showScreen('landing');
+});
+
+function enterApp(tab){
+  state.activeTab = tab;
+  state.selectedDate = todayStr();
+  document.getElementById('appTitle').textContent = GUILD_NAME + (state.isAdmin? ' · ผู้ดูแลระบบ':'');
+  document.getElementById('appWho').textContent = state.isAdmin ? 'โหมดผู้ดูแลระบบ — แก้ไขข้อมูลได้ทุกส่วน' : `เข้าสู่ระบบในนาม ${state.currentMember.name}`;
+  document.getElementById('datePicker').value = state.selectedDate;
+  renderTabsRow();
+  showScreen('app');
+  renderTab();
+}
+
+document.getElementById('datePicker').addEventListener('change', e=>{
+  state.selectedDate = e.target.value || todayStr();
+  renderTab();
+});
+
+/* ---------------- tabs row ---------------- */
+function renderTabsRow(){
+  const row = document.getElementById('tabsRow');
+  const visible = TABS.filter(t=> !t.adminOnly || state.isAdmin);
+  row.innerHTML = visible.map(t=>
+    `<button class="tab-btn ${state.activeTab===t.key?'active':''}" data-tab="${t.key}">${t.label}</button>`
+  ).join('');
+  row.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.activeTab = btn.dataset.tab;
+      renderTabsRow();
+      renderTab();
+    });
+  });
+}
+
+/* ---------------- กันข้อความที่กำลังพิมพ์ถูกล้างจากการรีเฟรชอัตโนมัติ ---------------- */
+function isTypingIn(container){
+  const a = document.activeElement;
+  return !!(container && a && container.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+}
+function refreshManageItemsModalIfList(){
+  const body = document.getElementById('modalBody');
+  if(!state.manageItemsModalOpen || !body) return;
+  if(!body.querySelector('#btnAddItem')) return;   // อยู่หน้าต่างย่อย (แก้ไข/ใส่รูป) ห้ามรีเฟรชทับ
+  if(isTypingIn(body)) return;                      // กำลังพิมพ์อยู่ ห้ามรีเฟรชทับ
+  renderManageItemsModal();
+}
+function refreshManageWeaponsModalIfList(){
+  const body = document.getElementById('modalBody');
+  if(!state.manageWeaponsModalOpen || !body) return;
+  if(!body.querySelector('#btnAddWeapon')) return;
+  if(isTypingIn(body)) return;
+  renderManageWeaponsModal();
+}
+let lastRenderKey = null;
+
+/* ---------------- main tab renderer ---------------- */
+function renderTab(){
+  const tabDef = TABS.find(t=>t.key===state.activeTab) || TABS[1];
+
+  if(tabDef.adminOnly && !state.isAdmin){
+    state.activeTab = 'members';
+    renderTabsRow();
+    return renderTab();
+  }
+
+  document.getElementById('dateBar').style.display = tabDef.needsDate ? 'flex' : 'none';
+  const content = document.getElementById('content');
+
+  // ถ้ากำลังพิมพ์อยู่ในช่องกรอกของหน้าเดิม ให้เลื่อนการรีเฟรชไปก่อน (ไม่งั้นข้อความที่พิมพ์จะหาย)
+  const renderKey = state.activeTab + '|' + state.selectedDate;
+  if(renderKey === lastRenderKey && isTypingIn(content)){
+    state.renderDeferred = true;
+    return;
+  }
+  lastRenderKey = renderKey;
+  state.renderDeferred = false;
+
+  switch(state.activeTab){
+    case 'dashboard': content.innerHTML = renderDashboard(); attachDashboardEvents(); break;
+    case 'members': content.innerHTML = renderMembers(); attachMemberEvents(); break;
+    case 'warehouse': content.innerHTML = renderWarehouse(); attachWarehouseEvents(); break;
+    case 'money': content.innerHTML = renderMoneyTab(); attachMoneyTabEvents(); break;
+    case 'sendMoney': content.innerHTML = renderSendMoney(); attachSendMoneyEvents(); break;
+    case 'sendItems': content.innerHTML = renderSendItems(); attachSendItemsEvents(); break;
+    case 'summary': content.innerHTML = renderSummary(); break;
+    case 'borrow': content.innerHTML = renderBorrow(); attachBorrowEvents(); break;
+    case 'borrowMoney': content.innerHTML = renderBorrowMoney(); attachBorrowMoneyEvents(); break;
+    case 'history': content.innerHTML = renderHistory(); break;
+    default: content.innerHTML = '';
+  }
+}
+
+document.getElementById('content').addEventListener('focusout', ()=>{
+  if(!state.renderDeferred) return;
+  setTimeout(()=>{
+    if(!state.renderDeferred) return;
+    if(isTypingIn(document.getElementById('content'))) return;
+    renderTab();
+  }, 350);
+});
+
+/* ================= DASHBOARD (admin) ================= */
+function renderDashboard(){
+  const today = todayStr();
+  const totalMembers = state.members.length;
+  const moneyKey = getMoneyItemKey();
+  const displayItemDefs = state.itemDefs.filter(it => it.key !== moneyKey);
+  const totalItemTypes = displayItemDefs.length;
+  const moneyToday = state.moneyRecords.filter(r=>r.date===today);
+  const itemsToday = state.itemRecords.filter(r=>r.date===today);
+  const moneySentToday = moneyToday.filter(r=>r.status==='sent').length;
+  const moneySumToday = moneyToday.filter(r=>r.status==='sent').reduce((s,r)=>s+Number(r.amount||0),0);
+
+  let fullyCompletedPeopleCount = 0;
+  if(totalItemTypes > 0){
+    fullyCompletedPeopleCount = state.members.filter(m => {
+      return displayItemDefs.every(it => {
+        const rec = itemsToday.find(r => r.memberId === m.id && r.itemKey === it.key);
+        return rec && rec.status === 'sent' && Number(rec.quantity) > 0;
+      });
+    }).length;
+  }
+
+  const totalHistoryLogs = state.history.length;
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ภาพรวมระบบ</h3><span class="muted">${escapeHtml(today)}</span></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="num">${totalMembers}</div><div class="lbl">สมาชิกทั้งหมด</div></div>
+        <div class="stat-card"><div class="num">${totalItemTypes}</div><div class="lbl">ประเภทของ</div></div>
+        <div class="stat-card"><div class="num">${moneySentToday}/${totalMembers}</div><div class="lbl">ส่งเงินวันนี้</div></div>
+        <div class="stat-card"><div class="num">${fullyCompletedPeopleCount}/${totalMembers} คน</div><div class="lbl">ส่งของครบทุกอย่างวันนี้</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">สรุปเงินวันนี้</h3>
+      <p class="muted">ยอดเงินที่ส่งแล้ววันนี้รวม <strong style="color:var(--gold-soft)">${fmtMoney(moneySumToday)}</strong> บาท จากสมาชิกที่ส่งแล้ว ${moneySentToday} คน</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">ประวัติการแก้ไข</h3>
+      <p class="muted">มีบันทึกประวัติทั้งหมด ${totalHistoryLogs} รายการ (แสดงล่าสุด 200 รายการในแท็บ "ประวัติ")</p>
+    </div>
+    <div class="card" style="border-color:#5a2f24;">
+      <h3 style="margin-bottom:10px; color:#e18a72;">⚠️ โซนอันตราย</h3>
+      <p class="muted" style="margin-bottom:10px;">รีเซ็ตระบบกลับเป็นค่าเริ่มต้นทั้งหมด — ลบสมาชิก, รายการของที่กำหนดเอง, ประวัติการส่งเงิน/ส่งของ, การยืมของ/ยืมเงิน, รายรับ-รายจ่าย, การยืนยันการส่งของ, และประวัติทั้งหมด แล้วตั้งรายการของกลับเป็นค่าเริ่มต้น การกระทำนี้ย้อนกลับไม่ได้</p>
+      <button class="btn btn-danger" id="btnFactoryReset">🔄 รีเซ็ต คืนค่าเริ่มต้นทั้งหมด</button>
+    </div>
+  `;
+}
+function attachDashboardEvents(){
+  const btn = document.getElementById('btnFactoryReset');
+  if(btn) btn.addEventListener('click', openFactoryResetModal);
+}
+function openFactoryResetModal(){
+  openModal(`
+    <h3>ยืนยันการรีเซ็ตคืนค่าเริ่มต้นทั้งหมด</h3>
+    <p class="muted" style="margin-bottom:12px;">ข้อมูลทั้งหมด — สมาชิก, รายการของที่กำหนดเอง, การส่งเงิน/ส่งของ, การยืม, รายรับ-รายจ่าย, และประวัติ — จะถูกลบทั้งหมดและไม่สามารถกู้คืนได้ รายการของจะถูกตั้งกลับเป็นค่าเริ่มต้น</p>
+    <p style="margin-bottom:12px;">พิมพ์ <strong style="color:var(--red);">RESET</strong> เพื่อยืนยัน</p>
+    <div class="field"><input class="input" id="factoryResetConfirmInput" placeholder="พิมพ์ RESET"></div>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+      <button class="btn btn-danger" id="modalConfirmReset">รีเซ็ตระบบ</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalConfirmReset').addEventListener('click', ()=>{
+    const val = document.getElementById('factoryResetConfirmInput').value.trim();
+    if(val !== 'RESET'){
+      showToast('กรุณาพิมพ์ RESET ให้ถูกต้องเพื่อยืนยัน');
+      return;
+    }
+    closeModal();
+    factoryReset();
+  });
+}
+async function factoryReset(){
+  state.seededItems = true;
+  state.moneyItemChecked = true;
+  state.seededWeapons = true;
+  try{
+    const [toolsSnap, historySnap] = await Promise.all([
+      db.collection('tools').get(),
+      db.collection('history').get()
+    ]);
+    const allDocs = [...toolsSnap.docs, ...historySnap.docs];
+    const chunkSize = 450;
+    for(let i=0; i<allDocs.length; i+=chunkSize){
+      const batch = db.batch();
+      allDocs.slice(i, i+chunkSize).forEach(d=>batch.delete(d.ref));
+      await batch.commit();
+    }
+    const seedBatch = db.batch();
+    DEFAULT_ITEMS.forEach(it=>{
+      const ref = db.collection('tools').doc();
+      seedBatch.set(ref, {type:'itemDef', ...it});
+    });
+    DEFAULT_WEAPONS.forEach((name, i)=>{
+      const ref = db.collection('tools').doc();
+      seedBatch.set(ref, {type:'weaponDef', name, order:i+1});
+    });
+    await seedBatch.commit();
+    showToast('รีเซ็ตระบบคืนค่าเริ่มต้นเรียบร้อยแล้ว');
+  }catch(e){
+    console.error('factory reset failed', e);
+    showToast('เกิดข้อผิดพลาดในการรีเซ็ตระบบ');
+  }
+}
+
+/* ================= MEMBERS ================= */
+function renderMembers(){
+  const listHtml = state.members.length ? state.members.map(m=>`
+    <div class="member-row">
+      <div class="member-name">${avatarHtml(m)}${escapeHtml(m.name)}
+        <span class="role-badge">${escapeHtml(m.role || 'สมาชิก')}</span>
+        ${getMemberWeapons(m).map(w=>`<span class="role-badge" style="background:var(--bg-0);">🗡️ ${escapeHtml(w)}</span>`).join('')}
+      </div>
+      <div class="row-actions">
+        ${canEditProfile(m.id) ? `<button class="btn btn-outline btn-sm" data-edit-member="${m.id}">แก้ไข</button>` : ''}
+        ${state.isAdmin ? `<button class="btn btn-danger btn-sm" data-delete-member="${m.id}">ลบ</button>` : ''}
+      </div>
+    </div>
+  `).join('') : `<div class="empty-state">ยังไม่มีรายชื่อสมาชิก</div>`;
+
+  const roleOptions = ROLES.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>รายชื่อสมาชิก (${state.members.length})</h3></div>
+      <div class="row-list">${listHtml}</div>
+      ${!state.isAdmin ? `<p class="muted" style="margin-top:12px;">กด "แก้ไข" เพื่อเปลี่ยนชื่อ, อาวุธ หรือรูปโปรไฟล์ของตัวเองเท่านั้น</p>` : ''}
+      ${state.isAdmin ? `
+      <div class="inline-form" style="margin-top:14px;">
+        <div class="field"><label>เพิ่มสมาชิกใหม่</label><input class="input" id="newMemberName" placeholder="ชื่อสมาชิก"></div>
+        <div class="field" style="max-width:160px;"><label>ตำแหน่ง</label><select class="input" id="newMemberRole">${roleOptions}</select></div>
+        <button class="btn btn-primary" id="btnAddMember">เพิ่มสมาชิก</button>
+      </div>
+      <button class="btn btn-outline" id="btnManageWeapons" style="margin-top:12px;">🗡️ จัดการรายการอาวุธ</button>
+      ` : ``}
+    </div>
+  `;
+}
+function attachMemberEvents(){
+  document.querySelectorAll('[data-edit-member]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openEditMemberModal(btn.dataset.editMember);
+    });
+  });
+  if(!state.isAdmin) return;
+  const btnAdd = document.getElementById('btnAddMember');
+  if(btnAdd) btnAdd.addEventListener('click', ()=>{
+    const input = document.getElementById('newMemberName');
+    const name = input.value.trim();
+    if(!name) return;
+    const role = document.getElementById('newMemberRole').value || 'สมาชิก';
+    db.collection('tools').add({type:'member', name, role}).then(()=>{
+      logHistory('เพิ่มสมาชิก', `เพิ่มสมาชิกใหม่: ${name} (${role})`);
+      showToast('เพิ่มสมาชิกแล้ว');
+      input.value='';
+    }).catch(err=>{
+      reportDbError(err);
+      showToast('เพิ่มสมาชิกไม่สำเร็จ — ดูข้อความสีแดงด้านบนหน้าจอ');
+    });
+  });
+  document.querySelectorAll('[data-delete-member]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.deleteMember;
+      const member = state.members.find(m=>m.id===id);
+      openModal(`
+        <h3>ลบสมาชิก</h3>
+        <p class="muted">ต้องการลบ "${escapeHtml(member.name)}" ออกจากรายชื่อสมาชิกหรือไม่? ประวัติการส่งของเดิมจะยังคงอยู่</p>
+        <div class="modal-close-row">
+          <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+          <button class="btn btn-danger" id="modalDelete">ลบสมาชิก</button>
+        </div>
+      `);
+      document.getElementById('modalCancel').addEventListener('click', closeModal);
+      document.getElementById('modalDelete').addEventListener('click', ()=>{
+        closeModal();
+        db.collection('tools').doc(id).delete().then(()=>{
+          logHistory('ลบสมาชิก', `ลบสมาชิก: ${member.name}`);
+          showToast('ลบสมาชิกแล้ว');
+        });
+      });
+    });
+  });
+  const btnWeapons = document.getElementById('btnManageWeapons');
+  if(btnWeapons) btnWeapons.addEventListener('click', openManageWeaponsModal);
+}
+
+function openManageWeaponsModal(){
+  state.manageWeaponsModalOpen = true;
+  renderManageWeaponsModal();
+}
+function renderManageWeaponsModal(){
+  const rows = state.weaponDefs.map(w=>`
+    <div class="item-manage-row">
+      <span>🗡️ ${escapeHtml(w.name)}</span>
+      <button class="btn btn-danger btn-sm" data-remove-weapon="${w.id}">ลบ</button>
+    </div>
+  `).join('');
+  openModal(`
+    <h3>จัดการรายการอาวุธ</h3>
+    <div style="margin-bottom:14px;">${rows || '<p class="muted">ยังไม่มีรายการอาวุธ</p>'}</div>
+    <div class="field"><label>เพิ่มอาวุธใหม่</label><input class="input" id="newWeaponName" placeholder="เช่น Sword"></div>
+    <button class="btn btn-primary btn-block" id="btnAddWeapon" style="margin-top:10px;">เพิ่มอาวุธ</button>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="modalCancel">ปิด</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', ()=>{
+    state.manageWeaponsModalOpen = false;
+    closeModal();
+  });
+  document.getElementById('btnAddWeapon').addEventListener('click', ()=>{
+    const name = document.getElementById('newWeaponName').value.trim();
+    if(!name) return;
+    const order = (state.weaponDefs.reduce((m,w)=>Math.max(m,w.order||0),0)) + 1;
+    state.weaponDefs = [...state.weaponDefs, {id:'temp_'+Date.now(), name, order}].sort((a,b)=>(a.order||0)-(b.order||0));
+    renderManageWeaponsModal();
+    db.collection('tools').add({type:'weaponDef', name, order}).then(()=>{
+      logHistory('เพิ่มอาวุธ', `เพิ่มอาวุธใหม่: ${name}`);
+      showToast('เพิ่มอาวุธแล้ว');
+    });
+  });
+  document.querySelectorAll('[data-remove-weapon]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.removeWeapon;
+      const weapon = state.weaponDefs.find(w=>w.id===id);
+      state.weaponDefs = state.weaponDefs.filter(w=>w.id!==id);
+      renderManageWeaponsModal();
+      db.collection('tools').doc(id).delete().then(()=>{
+        logHistory('ลบอาวุธ', `ลบอาวุธ: ${weapon.name}`);
+        showToast('ลบอาวุธแล้ว');
+      });
+
+    });
+  });
+}
+
+function openEditMemberModal(id){
+  const member = state.members.find(m=>m.id===id);
+  if(!member) return;
+  const isAdminEditor = state.isAdmin;
+  const currentWeapons = getMemberWeapons(member);
+  const roleOptions = ROLES.map(r=>`<option value="${escapeHtml(r)}" ${((member.role||'สมาชิก')===r)?'selected':''}>${escapeHtml(r)}</option>`).join('');
+  const weaponCheckboxes = state.weaponDefs.length ? state.weaponDefs.map(w=>`
+    <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px;cursor:pointer;">
+      <input type="checkbox" class="edit-member-weapon-checkbox" value="${escapeHtml(w.name)}" ${currentWeapons.includes(w.name)?'checked':''}>
+      🗡️ ${escapeHtml(w.name)}
+    </label>
+  `).join('') : `<p class="muted">ยังไม่มีรายการอาวุธ ให้ผู้ดูแลระบบเพิ่มก่อนที่หน้าสมาชิก</p>`;
+  openModal(`
+    <h3>แก้ไขข้อมูลสมาชิก</h3>
+    <div class="field"><label>ชื่อสมาชิก</label><input class="input" id="editMemberNameInput" value="${escapeHtml(member.name)}"></div>
+    ${isAdminEditor ? `<div class="field"><label>ตำแหน่ง</label><select class="input" id="editMemberRoleInput">${roleOptions}</select></div>` : ''}
+    <div class="field">
+      <label>อาวุธ (เลือกได้มากกว่า 1 รายการ)</label>
+      <div style="background:var(--bg-0);border:1px solid var(--border);border-radius:8px;padding:8px 12px;max-height:180px;overflow-y:auto;">
+        ${weaponCheckboxes}
+      </div>
+    </div>
+    <div class="field">
+      <label>รูปโปรไฟล์</label>
+      <input type="file" accept="image/*" id="editMemberPhotoInput" class="input">
+      <p class="muted" style="margin-top:6px;">แนะนำรูปหน้าตรง จะถูกครอปเป็นวงกลมและย่อขนาดอัตโนมัติ เว้นว่างไว้หากไม่ต้องการเปลี่ยนรูป</p>
+    </div>
+    <div class="modal-close-row">
+      ${member.photoBase64 ? `<button class="btn btn-danger" id="modalRemovePhoto">ลบรูปโปรไฟล์</button>` : ''}
+      <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSave">บันทึก</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  const removeBtn = document.getElementById('modalRemovePhoto');
+  if(removeBtn) removeBtn.addEventListener('click', ()=>{
+    closeModal();
+    db.collection('tools').doc(id).update({photoBase64: FieldValue.delete()}).then(()=>{
+      logHistory('ลบรูปโปรไฟล์', `ลบรูปโปรไฟล์ของ ${member.name}`);
+      showToast('ลบรูปโปรไฟล์แล้ว');
+    });
+  });
+  document.getElementById('modalSave').addEventListener('click', ()=>{
+    const newName = document.getElementById('editMemberNameInput').value.trim();
+    if(!newName) return;
+    const roleInput = document.getElementById('editMemberRoleInput');
+    const newRole = isAdminEditor ? (roleInput ? (roleInput.value || 'สมาชิก') : (member.role||'สมาชิก')) : (member.role||'สมาชิก');
+    const newWeapons = Array.from(document.querySelectorAll('.edit-member-weapon-checkbox:checked')).map(cb=>cb.value);
+    const fileInput = document.getElementById('editMemberPhotoInput');
+    const file = fileInput && fileInput.files[0];
+    closeModal();
+
+    const finishSave = (photoBase64)=>{
+      const payload = {name:newName, role:newRole, weapons:newWeapons, weapon: FieldValue.delete()};
+      if(photoBase64) payload.photoBase64 = photoBase64;
+      db.collection('tools').doc(id).update(payload).then(()=>{
+        const weaponsText = newWeapons.length ? newWeapons.join(', ') : 'ไม่ระบุ';
+        const detail = isAdminEditor
+          ? `เปลี่ยนชื่อ ${member.name} เป็น ${newName} (ตำแหน่ง: ${newRole}, อาวุธ: ${weaponsText})`
+          : `${member.name} แก้ไขชื่อ/อาวุธของตัวเองเป็น ${newName} (อาวุธ: ${weaponsText})`;
+        logHistory('แก้ไขสมาชิก', detail);
+        showToast('บันทึกแล้ว');
+      });
+    };
+
+    if(file){
+      resizeImageToBase64(file, 200, 0.75).then(finishSave);
+    } else {
+      finishSave(null);
+    }
+  });
+}
+
+/* ================= SEND MONEY ================= */
+function renderSendMoney(){
+  const date = state.selectedDate;
+  const cards = state.members.map(m=>{
+    const rec = findMoneyRecord(m.id, date);
+    const status = rec ? rec.status : 'not_sent';
+    const amount = rec ? Number(rec.amount||0) : 0;
+    const canEdit = state.isAdmin;
+    const target = Number(m.moneyTarget||0);
+    const shortfall = Math.max(0, target - amount);
+    const labelId = `money_shortfall__${m.id}`;
+    const moneyConfirmed = state.moneyConfirmations.some(c=>c.id===`mc__${date}__${m.id}`) && amount > 0;
+    return `
+      <div class="member-block">
+        <div class="member-block-head" style="justify-content:space-between;">
+          <div class="member-name">${avatarHtml(m)}${escapeHtml(m.name)}</div>
+          ${moneyConfirmed ? `<span class="pill pill-sent">✅ ยืนยันแล้ว</span>` : ''}
+        </div>
+        <div class="inline-form" style="align-items:flex-end;">
+          ${canEdit ? `
+          <div class="field" style="max-width:180px;">
+            <label>💰 เป้าหมาย (คนนี้)</label>
+            <input type="number" min="0" step="100" class="input" data-money-target-input="${m.id}" value="${target}" title="จำนวนเงินเป้าหมายของคนนี้โดยเฉพาะ บันทึกทันที">
+          </div>
+          <div class="field" style="max-width:180px;">
+            <label>จำนวนที่ส่ง</label>
+            <input type="number" min="0" step="100" class="input" data-amount-member="${m.id}" data-money-required="${target}" data-money-shortfall-label="${labelId}" value="${amount||0}" placeholder="บาท" title="จำนวนเงิน (ยังไม่บันทึกจนกว่าจะกดยืนยันการส่งเงิน)">
+          </div>
+          <button class="btn btn-primary" data-confirm-money="${m.id}">✅ ยืนยันการส่งเงิน</button>
+          ` : `
+          <div class="field">
+            <label>จำนวนที่ส่ง</label>
+            <strong style="font-size:16px;color:var(--gold-soft);">${amount ? fmtMoney(amount)+' บาท' : '0 บาท'}</strong>
+          </div>
+          `}
+        </div>
+        <div id="${labelId}" style="margin-top:8px;">${target>0 ? (shortfall>0
+          ? `<span style="color:var(--red);font-size:13px;">⚠️ ยังขาดส่งอยู่อีก ${fmtMoney(shortfall)} บาท</span>`
+          : `<span style="color:var(--green);font-size:13px;">✔ ส่งครบแล้ว (${fmtMoney(amount)}/${fmtMoney(target)} บาท)</span>`) : ''}</div>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ส่งเงิน</h3><span class="muted">${escapeHtml(date)}</span></div>
+      ${cards || '<div class="empty-state">ยังไม่มีสมาชิก</div>'}
+      ${state.isAdmin
+        ? `<p class="muted" style="margin-top:12px;">กรอกเป้าหมายและจำนวนเงินที่ส่งของแต่ละคน แล้วกด "ยืนยันการส่งเงิน" เพื่อบันทึกและซิงค์เข้าสรุปของทั้งหมด — เป้าหมายตั้งแยกกันได้ต่อคน บันทึกทันทีที่แก้ไข</p>`
+        : `<p class="muted" style="margin-top:12px;">แสดงสถานะและจำนวนเงินของสมาชิกทุกคน แก้ไขได้เฉพาะผู้ดูแลระบบเท่านั้น</p>`}
+    </div>
+  `;
+}
+
+function attachSendMoneyEvents(){
+  document.querySelectorAll('[data-money-target-input]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const memberId = el.dataset.moneyTargetInput;
+      const member = state.members.find(m=>m.id===memberId);
+      if(!member) return;
+      const newTarget = Math.max(0, Math.floor(Number(el.value)||0));
+      db.collection('tools').doc(memberId).update({moneyTarget:newTarget}).then(()=>{
+        logHistory('แก้ไขเป้าหมายเงิน', `ตั้งเป้าหมายเงินของ ${member.name} → ${fmtMoney(newTarget)} บาท`);
+        showToast('บันทึกเป้าหมายแล้ว');
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-amount-member]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const required = Number(el.dataset.moneyRequired||0);
+      const labelId = el.dataset.moneyShortfallLabel;
+      if(!labelId || required<=0) return;
+      const labelEl = document.getElementById(labelId);
+      if(!labelEl) return;
+      const amount = Math.max(0, Math.floor(Number(el.value)||0));
+      const shortfall = Math.max(0, required - amount);
+      labelEl.innerHTML = shortfall>0
+        ? `<span style="color:var(--red);">ยังขาดส่งอยู่อีก ${fmtMoney(shortfall)} บาท</span>`
+        : `<span style="color:var(--green);">ส่งครบแล้ว (${fmtMoney(amount)}/${fmtMoney(required)} บาท) — ยังไม่บันทึก</span>`;
+    });
+  });
+
+  document.querySelectorAll('[data-confirm-money]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      confirmMemberMoney(btn.dataset.confirmMoney);
+    });
+  });
+}
+
+function confirmMemberMoney(memberId){
+  const member = state.members.find(m=>m.id===memberId);
+  if(!member) return;
+  const date = state.selectedDate;
+  const inputEl = document.querySelector(`[data-amount-member="${memberId}"]`);
+  const amount = inputEl ? Math.max(0, Math.floor(Number(inputEl.value)||0)) : 0;
+  const status = amount > 0 ? 'sent' : 'not_sent';
+  const id = `${date}__${memberId}`;
+  const target = Number(member.moneyTarget||0);
+  const shortfall = Math.max(0, target - amount);
+  db.collection('tools').doc(id).set({
+    type:'moneyRecord', date, memberId, memberName: member.name, status, amount,
+    updatedAt: FieldValue.serverTimestamp()
+  }, {merge:true}).then(()=>{
+    const confId = `mc__${date}__${memberId}`;
+    db.collection('tools').doc(confId).set({
+      type:'moneyConfirmation', date, memberId, memberName: member.name,
+      confirmedAt: FieldValue.serverTimestamp()
+    }, {merge:true});
+    logHistory('ยืนยันการส่งเงิน', `${member.name} วันที่ ${date} → ${status==='sent' ? 'ส่งแล้ว ('+fmtMoney(amount)+' บาท)' : 'ยังไม่ส่ง'}`);
+    if(target>0 && shortfall>0){
+      showToast(`ยืนยันแล้ว แต่ยังส่งไม่ครบเป้าหมาย: ขาดอีก ${fmtMoney(shortfall)} บาท`);
+    } else {
+      showToast('ยืนยันการส่งเงินสำเร็จ ✅');
+    }
+  });
+}
+
+/* ================= MONEY TAB ================= */
+function totalLedgerIncome(){
+  return state.ledgerEntries.filter(e=>e.entryType==='income').reduce((s,e)=>s+Number(e.amount||0),0);
+}
+function totalLedgerExpense(){
+  return state.ledgerEntries.filter(e=>e.entryType==='expense').reduce((s,e)=>s+Number(e.amount||0),0);
+}
+function renderMoneyTab(){
+  const date = state.selectedDate;
+  const dayRecs = state.moneyRecords.filter(r=>r.date===date && r.status==='sent');
+  const dayTotal = dayRecs.reduce((s,r)=>s+Number(r.amount||0),0);
+
+  const allSentRecs = state.moneyRecords.filter(r=>r.status==='sent');
+  const grandTotal = allSentRecs.reduce((s,r)=>s+Number(r.amount||0),0);
+  const borrowedMoney = borrowedMoneyTotal() + borrowedMoneyRecordsTotal();
+  const ledgerIncome = totalLedgerIncome();
+  const ledgerExpense = totalLedgerExpense();
+  const availableTotal = Math.max(0, grandTotal + ledgerIncome - ledgerExpense - borrowedMoney);
+
+  const dayRows = dayRecs
+    .slice()
+    .sort((a,b)=>(a.memberName||'').localeCompare(b.memberName||'', 'th'))
+    .map(r=>`<tr>
+      <td>${escapeHtml(r.memberName)}</td>
+      <td class="center">${fmtMoney(r.amount||0)} บาท</td>
+    </tr>`).join('');
+
+  // คำนวณยอดเงินสะสมรวมทุกวันแยกตามสมาชิก
+  const memberTotals = state.members.map(m => {
+    const sum = allSentRecs
+      .filter(r => r.memberId === m.id)
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+    return { memberName: m.name, sum };
+  }).filter(m => m.sum > 0);
+
+  const totalRows = memberTotals
+    .sort((a,b) => b.sum - a.sum)
+    .map(m=>`<tr>
+      <td>${escapeHtml(m.memberName)}</td>
+      <td class="center">${fmtMoney(m.sum)} บาท</td>
+    </tr>`).join('');
+
+  const ledgerFormHtml = state.isAdmin ? `
+    <div class="inline-form" style="align-items:flex-end;">
+      <div class="field" style="max-width:140px;">
+        <label>ประเภท</label>
+        <select class="input" id="ledgerTypeInput">
+          <option value="income">รายรับ (+)</option>
+          <option value="expense">รายจ่าย (-)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ข้อความ / รายละเอียด</label>
+        <input class="input" id="ledgerDescInput" placeholder="เช่น ค่าสมาชิกรายเดือน, ซื้อของเข้าแก๊งค์">
+      </div>
+      <div class="field" style="max-width:160px;">
+        <label>จำนวนเงิน (บาท)</label>
+        <input type="number" min="1" value="100" class="input" id="ledgerAmountInput">
+      </div>
+      <div class="field" style="max-width:170px;">
+        <label>วันที่</label>
+        <input type="date" class="input" id="ledgerDateInput" value="${todayStr()}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="btnSubmitLedger" style="margin-top:10px;">บันทึกรายการ</button>
+  ` : '';
+
+  const ledgerRows = state.ledgerEntries.slice()
+    .sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0))
+    .map(e=>{
+      const isIncome = e.entryType==='income';
+      return `
+        <div class="member-row">
+          <div class="member-name">
+            <div>
+              <div>${escapeHtml(e.description||'(ไม่มีรายละเอียด)')}</div>
+              <div class="muted" style="font-size:11.5px;">วันที่ ${escapeHtml(e.date||'')} — โดย ${escapeHtml(e.createdBy||'')}</div>
+            </div>
+          </div>
+          <div class="row-actions">
+            <span class="pill ${isIncome?'pill-sent':'pill-notsent'}">${isIncome?'+':'-'} ${fmtMoney(e.amount||0)} บาท</span>
+            ${state.isAdmin ? `<button class="btn btn-danger btn-sm" data-delete-ledger="${e.id}">ลบ</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>เงินแก๊งค์ (ซิงค์ข้อมูลเรียลไทม์)</h3></div>
+      <div class="stat-grid" style="margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="num" style="color:var(--green);">${fmtMoney(availableTotal)} บาท</div>
+          <div class="lbl">ยอดเงินแก๊งค์สะสมทั้งหมด (รวมทุกวัน)</div>
+        </div>
+        ${borrowedMoney>0 ? `
+        <div class="stat-card">
+          <div class="num" style="color:var(--red);">${fmtMoney(borrowedMoney)} บาท</div>
+          <div class="lbl">ยืมไปแล้ว (ยังไม่คืน)</div>
+        </div>` : ''}
+      </div>
+
+      <h4 style="margin:14px 0 8px; color:var(--gold-soft);">1. ยอดการส่งเงินประจำวันที่ ${escapeHtml(date)}</h4>
+      <div class="table-wrap" style="margin-bottom:20px;">
+        <table>
+          <thead><tr><th>สมาชิก</th><th class="center">จำนวนเงินส่งวันนี้</th></tr></thead>
+          <tbody>${dayRows || '<tr><td colspan="2" class="muted center">ยังไม่มีคนส่งเงินในวันที่เลือกนี้</td></tr>'}</tbody>
+        </table>
+      </div>
+
+      <h4 style="margin:14px 0 8px; color:var(--gold-soft);">2. สรุปเงินสะสมในคลังแก๊งค์รายบุคคล (รวมทุกวัน)</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>สมาชิก</th><th class="center">ยอดส่งเงินสะสมทั้งหมด</th></tr></thead>
+          <tbody>${totalRows || '<tr><td colspan="2" class="muted center">ยังไม่มีข้อมูลการส่งเงินสะสม</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>3. รายรับ-รายจ่ายพิเศษ</h3></div>
+      ${ledgerFormHtml}
+      ${!state.isAdmin ? `<p class="muted" style="margin-bottom:10px;">แสดงประวัติรายรับ-รายจ่ายของแก๊งค์ (แก้ไขได้เฉพาะผู้ดูแลระบบ)</p>` : ''}
+      <div class="row-list" style="margin-top:${state.isAdmin?'14px':'0'};">${ledgerRows || '<div class="empty-state">ยังไม่มีรายการรายรับ-รายจ่าย</div>'}</div>
+    </div>
+  `;
+}
+function attachMoneyTabEvents(){
+  const btnSubmit = document.getElementById('btnSubmitLedger');
+  if(btnSubmit) btnSubmit.addEventListener('click', submitLedgerEntry);
+  document.querySelectorAll('[data-delete-ledger]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      deleteLedgerEntry(btn.dataset.deleteLedger);
+    });
+  });
+}
+function submitLedgerEntry(){
+  const entryType = document.getElementById('ledgerTypeInput').value === 'expense' ? 'expense' : 'income';
+  const description = document.getElementById('ledgerDescInput').value.trim();
+  const amount = Math.max(1, Math.floor(Number(document.getElementById('ledgerAmountInput').value)||0));
+  const date = document.getElementById('ledgerDateInput').value || todayStr();
+  if(!description || amount<=0) return;
+  const createdBy = state.isAdmin ? 'ผู้ดูแลระบบ' : (state.currentMember ? state.currentMember.name : 'ระบบ');
+  db.collection('tools').add({
+    type:'ledgerEntry', entryType, description, amount, date, createdBy,
+    createdAtMs: Date.now(),
+    createdAt: FieldValue.serverTimestamp()
+  }).then(()=>{
+    logHistory(entryType==='income' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย', `${description} จำนวน ${fmtMoney(amount)} บาท วันที่ ${date}`);
+    showToast('บันทึกรายการแล้ว');
+  });
+}
+function deleteLedgerEntry(id){
+  const entry = state.ledgerEntries.find(e=>e.id===id);
+  if(!entry) return;
+  db.collection('tools').doc(id).delete().then(()=>{
+    logHistory('ลบรายการรายรับ-รายจ่าย', `ลบ: ${entry.description} — ${fmtMoney(entry.amount||0)} บาท`);
+    showToast('ลบรายการแล้ว');
+  });
+}
+
+/* ================= SEND ITEMS ================= */
+function renderSendItems(){
+  const date = state.selectedDate;
+  if(!state.itemDefs.length){
+    return `<div class="card"><div class="empty-state">ยังไม่มีรายการของ กรุณาให้ผู้ดูแลระบบเพิ่มรายการของก่อน</div></div>`;
+  }
+  const moneyKey = getMoneyItemKey();
+  const displayItemDefs = state.itemDefs.filter(it => it.key !== moneyKey);
+  if(!displayItemDefs.length){
+    return `<div class="card"><div class="empty-state">ยังไม่มีรายการของ กรุณาให้ผู้ดูแลระบบเพิ่มรายการของก่อน</div></div>`;
+  }
+
+  const blocks = state.members.map(m=>{
+    const confirmation = state.sendConfirmations.find(c=>c.id===`sc__${date}__${m.id}`);
+    let anyShortfall = false;
+    const chips = displayItemDefs.map(it=>{
+      const rec = findItemRecord(m.id, it.key, date);
+      const status = rec ? rec.status : 'not_sent';
+      const quantity = rec && Number(rec.quantity) > 0 ? Number(rec.quantity) : (status==='sent' ? 1 : 0);
+      const required = Number((m.itemTargets && m.itemTargets[it.key]) || 0);
+      const shortfall = Math.max(0, required - quantity);
+      if(shortfall>0) anyShortfall = true;
+      const thumb = (state.isAdmin && rec && rec.imageBase64) ? `<img class="thumb" src="${rec.imageBase64}">` : '';
+      const labelId = `shortfall__${m.id}__${it.key}`;
+      const itemConfirmed = confirmation && quantity > 0;
+      return `<div class="item-detail-card ${status==='sent'?'sent':''}">
+                <div class="item-detail-head" style="justify-content:space-between;display:flex;align-items:center;">
+                  <span>${thumb}${itemIconLabel(it, true)} ${escapeHtml(it.name)}</span>
+                  ${itemConfirmed ? `<span class="pill pill-sent" style="font-size:11px;">✅ ยืนยันแล้ว</span>` : ''}
+                </div>
+                ${state.isAdmin ? `
+                <div style="display:flex;gap:10px;">
+                  <div class="field-row" style="flex:1;">
+                    <label>เป้าหมาย (คนนี้)</label>
+                    <input type="number" min="0" step="1" class="qty-input" data-target-member="${m.id}" data-target-item="${it.key}" data-target-required-label="${labelId}" data-target-quantity="${quantity}" value="${required}" title="จำนวนที่ต้องการเก็บของคนนี้โดยเฉพาะ บันทึกทันที">
+                  </div>
+                  <div class="field-row" style="flex:1;">
+                    <label>ส่งจริง</label>
+                    <input type="number" min="0" step="1" class="item-qty-input" data-quantity-member="${m.id}" data-quantity-key="${it.key}" data-required="${required}" data-shortfall-label="${labelId}" value="${quantity}" title="จำนวนที่ส่ง (ยังไม่บันทึกจนกว่าจะกดยืนยันการส่งของ)">
+                  </div>
+                </div>
+                ` : `
+                <div class="field-row">
+                  <label>จำนวนที่ส่ง</label>
+                  <strong>${status==='sent' ? `×${quantity} ✅` : '❌ ยังไม่ส่ง'}</strong>
+                </div>
+                `}
+                <div id="${labelId}" class="shortfall-note">${required>0 ? (shortfall>0
+                  ? `<span style="color:var(--red);">ขาดอีก ${shortfall}</span>`
+                  : `<span style="color:var(--green);">ครบแล้ว (${quantity}/${required})</span>`) : ''}</div>
+              </div>`;
+    }).join('');
+    return `
+      <div class="member-block">
+        <div class="member-block-head">
+          <div class="member-name">${avatarHtml(m)}${escapeHtml(m.name)}</div>
+        </div>
+        <div class="item-detail-grid">${chips}</div>
+        ${state.isAdmin ? `<button class="btn btn-primary btn-sm" data-confirm-send="${m.id}" style="margin-top:12px;">✅ ยืนยันการส่งของ</button>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ส่งของ</h3><span class="muted">${escapeHtml(date)}</span></div>
+      ${blocks || '<div class="empty-state">ยังไม่มีสมาชิก</div>'}
+      ${!state.isAdmin ? `<p class="muted" style="margin-top:6px;">แสดงจำนวนของที่ส่งของแต่ละคน แก้ไขได้เฉพาะผู้ดูแลระบบเท่านั้น</p>` : ``}
+    </div>
+  `;
+}
+function attachSendItemsEvents(){
+  document.querySelectorAll('[data-target-item]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const memberId = el.dataset.targetMember;
+      const itemKey = el.dataset.targetItem;
+      const member = state.members.find(m=>m.id===memberId);
+      const itemDef = state.itemDefs.find(i=>i.key===itemKey);
+      if(!member || !itemDef) return;
+      const newRequired = Math.max(0, Math.floor(Number(el.value)||0));
+      const newTargets = { ...(member.itemTargets || {}), [itemKey]: newRequired };
+      db.collection('tools').doc(memberId).update({ itemTargets: newTargets }).then(()=>{
+        logHistory('แก้ไขเป้าหมายการเก็บ', `${member.name} — ${itemDef.name} → เป้าหมาย ${newRequired}`);
+        showToast('บันทึกเป้าหมายแล้ว');
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-quantity-member]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const required = Number(el.dataset.required||0);
+      const labelId = el.dataset.shortfallLabel;
+      if(!labelId || required<=0) return;
+      const labelEl = document.getElementById(labelId);
+      if(!labelEl) return;
+      const quantity = Math.max(0, Math.floor(Number(el.value)||0));
+      const shortfall = Math.max(0, required - quantity);
+      labelEl.innerHTML = shortfall>0
+        ? `<span style="font-size:11px;color:var(--red);">ยังขาดส่งอยู่อีก ${shortfall}</span>`
+        : `<span style="font-size:11px;color:var(--green);">ส่งครบแล้ว (${quantity}/${required}) — ยังไม่บันทึก</span>`;
+    });
+  });
+
+  document.querySelectorAll('[data-confirm-send]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      confirmMemberSend(btn.dataset.confirmSend);
+    });
+  });
+}
+function confirmMemberSend(memberId){
+  const member = state.members.find(m=>m.id===memberId);
+  if(!member) return;
+  const date = state.selectedDate;
+  const batch = db.batch();
+  const shortages = [];
+
+  const moneyKey = getMoneyItemKey();
+  state.itemDefs.filter(it => it.key !== moneyKey).forEach(it=>{
+    const input = document.querySelector(`[data-quantity-member="${memberId}"][data-quantity-key="${it.key}"]`);
+    let quantity;
+    if(input){
+      quantity = Math.max(0, Math.floor(Number(input.value)||0));
+      input.value = quantity;
+    } else {
+      const rec = findItemRecord(memberId, it.key, date);
+      quantity = rec ? Number(rec.quantity||0) : 0;
+    }
+    const status = quantity > 0 ? 'sent' : 'not_sent';
+    const itemId = `${date}__${memberId}__${it.key}`;
+    batch.set(db.collection('tools').doc(itemId), {
+      type:'itemRecord', date, memberId, memberName: member.name,
+      itemKey: it.key, itemName: it.name, status, quantity,
+      updatedAt: FieldValue.serverTimestamp()
+    }, {merge:true});
+
+    const required = Number((member.itemTargets && member.itemTargets[it.key]) || 0);
+    if(required>0 && quantity < required) shortages.push(`${it.name} ขาด ${required-quantity}`);
+  });
+
+  const confId = `sc__${date}__${memberId}`;
+  batch.set(db.collection('tools').doc(confId), {
+    type:'sendConfirmation', date, memberId, memberName: member.name,
+    confirmedAt: FieldValue.serverTimestamp()
+  }, {merge:true});
+
+  batch.commit().then(()=>{
+    logHistory('ยืนยันการส่งของ', `${member.name} วันที่ ${date}${shortages.length ? ` (ยังขาด: ${shortages.join(', ')})` : ' (ครบถ้วน)'}`);
+    if(shortages.length){
+      showToast(`ยืนยันแล้ว แต่ยังส่งไม่ครบ: ${shortages.join(', ')}`);
+    } else {
+      showToast('ยืนยันการส่งของสำเร็จ ครบถ้วน! ✅');
+    }
+  });
+}
+
+function resizeImageToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > h){ if(w>maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+        else { if(h>maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---- manage item types modal (admin) ---- */
+function openManageItemsModal(){
+  state.manageItemsModalOpen = true;
+  renderManageItemsModal();
+}
+function renderManageItemsModal(){
+  const moneyKey = getMoneyItemKey();
+  const rows = state.itemDefs.filter(it => it.key !== moneyKey).map(it=>`
+    <div class="item-manage-row">
+      <span>${itemIconLabel(it, true)} ${escapeHtml(it.name)}</span>
+      <div class="row-actions">
+        <button class="btn btn-outline btn-sm" data-edit-item="${it.id}">แก้ไข</button>
+        <button class="btn btn-outline btn-sm" data-icon-item="${it.id}">🖼️ ใส่รูปเอง</button>
+        <button class="btn btn-danger btn-sm" data-remove-item="${it.id}">ลบ</button>
+      </div>
+    </div>
+  `).join('');
+  openModal(`
+    <h3>จัดการรายการของ</h3>
+    <div style="margin-bottom:14px;">${rows || '<p class="muted">ยังไม่มีรายการของ</p>'}</div>
+    <p class="muted" style="margin-bottom:8px;">รูปไอคอนของรายการของสามารถเพิ่มหรือเปลี่ยนได้เฉพาะจากเมนูนี้เท่านั้น (เป้าหมายการส่งของตั้งแยกรายคนได้ที่หน้า "ส่งของ")</p>
+    <div class="field"><label>เพิ่มรายการของใหม่ — ชื่อรายการ</label><input class="input" id="newItemName" placeholder="เช่น หิน"></div>
+    <div class="field"><label>อัปโหลดรูปไอคอน (ไม่บังคับ)</label><input type="file" accept="image/*" class="input" id="newItemIconFile"></div>
+    <button class="btn btn-primary btn-block" id="btnAddItem" style="margin-top:10px;">เพิ่มรายการของ</button>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="modalCancel">ปิด</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', ()=>{
+    state.manageItemsModalOpen = false;
+    closeModal();
+  });
+  document.getElementById('btnAddItem').addEventListener('click', ()=>{
+    const name = document.getElementById('newItemName').value.trim();
+    if(!name) return;
+    const required = 0;
+    const key = 'item_' + Date.now();
+    const order = (state.itemDefs.reduce((m,i)=>Math.max(m,i.order||0),0)) + 1;
+    const iconFile = document.getElementById('newItemIconFile').files[0];
+    const finish = (iconImage)=>{
+      const payload = {type:'itemDef', key, name, order, required};
+      if(iconImage) payload.iconImage = iconImage;
+      // แสดงรายการใหม่ทันทีแบบ optimistic ก่อนรอผลจากเซิร์ฟเวอร์
+      state.itemDefs = [...state.itemDefs, {id:'temp_'+key, ...payload}].sort((a,b)=>(a.order||0)-(b.order||0));
+      renderManageItemsModal();
+      db.collection('tools').add(payload).then(()=>{
+        logHistory('เพิ่มรายการของ', `เพิ่มรายการ: ${name}${required>0?` (ต้องส่ง ${required}/คน)`:''}`);
+        showToast('เพิ่มรายการของแล้ว');
+      });
+    };
+    if(iconFile){ resizeImageToBase64(iconFile, 96, 0.7).then(finish); }
+    else { finish(null); }
+  });
+  document.querySelectorAll('[data-remove-item]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.removeItem;
+      const item = state.itemDefs.find(i=>i.id===id);
+      state.itemDefs = state.itemDefs.filter(i=>i.id!==id);
+      renderManageItemsModal();
+      db.collection('tools').doc(id).delete().then(()=>{
+        logHistory('ลบรายการของ', `ลบรายการ: ${item.name}`);
+        showToast('ลบรายการของแล้ว');
+      });
+    });
+  });
+  document.querySelectorAll('[data-icon-item]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openItemIconUpload(btn.dataset.iconItem);
+    });
+  });
+  document.querySelectorAll('[data-edit-item]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openEditItemModal(btn.dataset.editItem);
+    });
+  });
+}
+
+function openEditItemModal(itemId){
+  const item = state.itemDefs.find(i=>i.id===itemId);
+  if(!item) return;
+  openModal(`
+    <h3>แก้ไขรายการของ</h3>
+    <div class="field"><label>ชื่อรายการ</label><input class="input" id="editItemNameInput" value="${escapeHtml(item.name)}"></div>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSave">บันทึก</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', ()=>renderManageItemsModal());
+  document.getElementById('modalSave').addEventListener('click', ()=>{
+    const newName = document.getElementById('editItemNameInput').value.trim();
+    if(!newName) return;
+    db.collection('tools').doc(itemId).update({name:newName}).then(()=>{
+      logHistory('แก้ไขรายการของ', `เปลี่ยนชื่อ ${item.name} เป็น ${newName}`);
+      showToast('บันทึกแล้ว');
+      renderManageItemsModal();
+    });
+  });
+}
+
+function openItemIconUpload(itemId){
+  const item = state.itemDefs.find(i=>i.id===itemId);
+  openModal(`
+    <h3>ใส่รูปไอคอนเอง — ${escapeHtml(item.name)}</h3>
+    <div class="field"><input type="file" accept="image/*" id="iconFileInput" class="input"></div>
+    <p class="muted">แนะนำรูปสี่เหลี่ยมจัตุรัสขนาดเล็ก ระบบจะย่อขนาดให้อัตโนมัติ</p>
+    <div class="modal-close-row">
+      ${item.iconImage ? `<button class="btn btn-danger" id="modalRemoveIcon">ลบรูป ใช้อีโมจิแทน</button>` : ''}
+      <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSaveIcon">บันทึกรูป</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', ()=>renderManageItemsModal());
+  const removeBtn = document.getElementById('modalRemoveIcon');
+  if(removeBtn) removeBtn.addEventListener('click', ()=>{
+    db.collection('tools').doc(itemId).update({iconImage: FieldValue.delete()}).then(()=>{
+      logHistory('ลบรูปไอคอน', `ลบรูปไอคอนของ ${item.name}`);
+      showToast('ลบรูปไอคอนแล้ว');
+      renderManageItemsModal();
+    });
+  });
+  document.getElementById('modalSaveIcon').addEventListener('click', ()=>{
+    const fileInput = document.getElementById('iconFileInput');
+    const file = fileInput.files[0];
+    if(!file){ renderManageItemsModal(); return; }
+    resizeImageToBase64(file, 96, 0.7).then(base64=>{
+      db.collection('tools').doc(itemId).update({iconImage: base64}).then(()=>{
+        logHistory('ตั้งรูปไอคอน', `ตั้งรูปไอคอนของ ${item.name}`);
+        showToast('บันทึกรูปไอคอนแล้ว');
+        renderManageItemsModal();
+      });
+    });
+  });
+}
+
+/* ================= WAREHOUSE (คลังแก๊งค์) ================= */
+function renderWarehouse(){
+  if(!state.itemDefs.length){
+    return `
+      <div class="card">
+        <div class="card-head"><h3>คลังแก๊งค์</h3></div>
+        <div class="empty-state">ยังไม่มีรายการของ</div>
+        ${state.isAdmin ? `<button class="btn btn-outline" id="btnManageItems" style="margin-top:12px;">จัดการรายการของ</button>` : ''}
+      </div>
+    `;
+  }
+
+  const sentRecords = state.itemRecords.filter(r=>r.status==='sent');
+
+  const getQty = rec => {
+    const q = Number(rec.quantity);
+    return Number.isFinite(q) && q > 0 ? q : 1;
+  };
+
+  const manualQtyForItem = itemKey => state.stockAdjustments
+    .filter(a=>a.itemKey===itemKey)
+    .reduce((s,a)=>s+Number(a.quantity||0),0);
+
+  const moneyKey = getMoneyItemKey();
+  const displayItemDefs = state.itemDefs.filter(it => it.key !== moneyKey);
+
+  const perItemCounts = displayItemDefs.map(it=>{
+    const sentCount = sentRecords
+      .filter(r=>r.itemKey===it.key)
+      .reduce((sum,r)=>sum + getQty(r), 0);
+    const manual = manualQtyForItem(it.key);
+    const borrowed = borrowedQtyForItem(it.key);
+    const count = Math.max(0, sentCount + manual - borrowed);
+    return {it, count, borrowed};
+  });
+
+  const statCards = perItemCounts.map(({it,count,borrowed})=>`
+    <div class="stat-card" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;">
+      <div>${itemIconLabel(it, true, 'xl')}</div>
+      <div class="num" style="font-size:22px;">${count}</div>
+      <div class="lbl">${escapeHtml(it.name)} รวมทั้งหมด</div>
+      ${borrowed>0 ? `<span class="pill pill-notsent" style="font-size:11px;">ยืมไปแล้ว ${borrowed}</span>` : ''}
+      ${state.isAdmin ? `<button class="btn btn-outline btn-sm" data-add-stock="${it.key}" style="margin-top:2px;">⚙️ ปรับจำนวน</button>` : ''}
+    </div>
+  `).join('');
+
+  const blocks = state.members.map(m=>{
+    const memberItems = displayItemDefs.map(it=>{
+      const records = sentRecords.filter(r=>r.memberId===m.id && r.itemKey===it.key);
+      const quantity = records.reduce((sum,r)=>sum + getQty(r), 0);
+      if(quantity <= 0) return null;
+
+      const lastRecWithPhoto = records.slice().reverse().find(r => r.imageBase64);
+      const thumb = lastRecWithPhoto ? `<img class="thumb-large" src="${lastRecWithPhoto.imageBase64}" title="รูปหลักฐานล่าสุด">` : '';
+
+      return `<span class="item-chip sent" style="padding:6px 12px;">
+        ${thumb}
+        <div>
+          <div>${itemIconLabel(it)} ${escapeHtml(it.name)} <span class="item-qty">×${quantity}</span></div>
+        </div>
+      </span>`;
+    }).filter(Boolean).join('');
+
+    if(!memberItems) return '';
+    return `<div class="member-block">
+      <div class="member-block-head">
+        <div class="member-name">${avatarHtml(m)}${escapeHtml(m.name)}</div>
+      </div>
+      <div class="chip-row">${memberItems}</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head">
+        <h3>คลังแก๊งค์</h3>
+        <span class="muted">ข้อมูลรวมสะสมทุกวัน</span>
+      </div>
+      <div class="stat-grid">${statCards}</div>
+
+      <p class="muted" style="margin-top:10px;">ข้อมูลส่งเงินและส่งของในแต่ละวันจะถูกบันทึกและซิงค์รวมกันเข้าคลังแก๊งค์โดยอัตโนมัติ</p>
+      ${state.isAdmin ? `<button class="btn btn-outline" id="btnManageItems" style="margin-top:12px;">จัดการรายการของ</button>` : ``}
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">ของและเงินในคลัง แยกตามสมาชิก (รวมทุกวัน)</h3>
+      ${blocks || '<div class="empty-state">ยังไม่มีใครส่งเงินหรือของเข้าคลัง</div>'}
+    </div>
+  `;
+}
+
+function attachWarehouseEvents(){
+  const manageBtn = document.getElementById('btnManageItems');
+  if(manageBtn) manageBtn.addEventListener('click', openManageItemsModal);
+  document.querySelectorAll('[data-add-stock]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openAddStockModal(btn.dataset.addStock);
+    });
+  });
+}
+
+function openAddStockModal(itemKey){
+  const itemDef = state.itemDefs.find(i=>i.key===itemKey);
+  if(!itemDef) return;
+  openModal(`
+    <h3>ปรับจำนวน — ${escapeHtml(itemDef.name)}</h3>
+    <div class="field">
+      <label>รูปแบบ</label>
+      <select class="input" id="addStockDirectionInput">
+        <option value="add">➕ เพิ่มเข้าคลัง</option>
+        <option value="subtract">➖ ลดออกจากคลัง</option>
+      </select>
+    </div>
+    <div class="field"><label>จำนวน</label><input type="number" min="1" value="1" class="input" id="addStockQtyInput"></div>
+    <div class="field"><label>หมายเหตุ (ไม่บังคับ)</label><input class="input" id="addStockNoteInput" placeholder="เช่น ปรับยอดให้ตรงของจริง"></div>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="modalCancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSaveStock">บันทึก</button>
+    </div>
+  `);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalSaveStock').addEventListener('click', ()=>{
+    const direction = document.getElementById('addStockDirectionInput').value;
+    const qtyAbs = Math.max(1, Math.floor(Number(document.getElementById('addStockQtyInput').value)||1));
+    const qty = direction === 'subtract' ? -qtyAbs : qtyAbs;
+    const note = document.getElementById('addStockNoteInput').value.trim();
+    closeModal();
+    db.collection('tools').add({
+      type:'stockAdjustment', itemKey, itemName: itemDef.name, quantity: qty, note,
+      createdBy: 'ผู้ดูแลระบบ', createdAtMs: Date.now(),
+      createdAt: FieldValue.serverTimestamp()
+    }).then(()=>{
+      const verb = direction === 'subtract' ? 'ลด' : 'เพิ่ม';
+      logHistory('ปรับจำนวนในคลัง', `${verb} ${itemDef.name} จำนวน ${qtyAbs}${note?` (${note})`:''}`);
+      showToast(`${verb}จำนวนในคลังแล้ว`);
+    });
+  });
+}
+
+/* ================= SUMMARY ================= */
+function renderSummary(){
+  const date = state.selectedDate;
+  const moneyKey = getMoneyItemKey();
+  const allItemDefs = state.itemDefs.filter(it => it.key !== moneyKey);
+
+  const confirmedMemberIds = new Set(
+    state.sendConfirmations.filter(c=>c.date===date).map(c=>c.memberId)
+  );
+  const visibleMembers = state.members.filter(m =>
+    confirmedMemberIds.has(m.id) || !!findMoneyRecord(m.id, date)
+  );
+
+  // แสดงเฉพาะของที่มีการกดยืนยันส่งจริง (มีอย่างน้อย 1 คนส่งจำนวน > 0 ในวันนั้น)
+  const displayItemDefs = allItemDefs.filter(it =>
+    visibleMembers.some(m => {
+      if(!confirmedMemberIds.has(m.id)) return false;
+      const rec = findItemRecord(m.id, it.key, date);
+      return rec && rec.status==='sent' && Number(rec.quantity) > 0;
+    })
+  );
+  const itemCols = displayItemDefs.map(it=>`<th class="center">${itemIconLabel(it)}<br><span style="font-weight:400;">${escapeHtml(it.name)}</span></th>`).join('');
+
+  const rows = visibleMembers.map(m=>{
+    const moneyRec = findMoneyRecord(m.id, date);
+    const moneyAmount = moneyRec && moneyRec.status==='sent' ? Number(moneyRec.amount||0) : 0;
+    const moneyTarget = Number(m.moneyTarget||0);
+    const moneyShortfall = Math.max(0, moneyTarget - moneyAmount);
+    let moneyCell;
+    if(moneyAmount <= 0){
+      moneyCell = `<span class="pill pill-notsent">❌</span>`;
+    } else if(moneyTarget>0 && moneyShortfall>0){
+      moneyCell = `<span class="pill pill-notsent">${fmtMoney(moneyAmount)} (ขาด ${fmtMoney(moneyShortfall)})</span>`;
+    } else {
+      moneyCell = `<span class="pill pill-sent">✅ ${fmtMoney(moneyAmount)}</span>`;
+    }
+    const itemCells = displayItemDefs.map(it=>{
+      const rec = findItemRecord(m.id, it.key, date);
+      const sent = rec && rec.status==='sent';
+      const quantity = sent ? Math.max(0, Number(rec.quantity)||0) : 0;
+      const required = Number((m.itemTargets && m.itemTargets[it.key]) || 0);
+      const shortfall = Math.max(0, required - quantity);
+      let cellHtml;
+      if(quantity <= 0){
+        cellHtml = `<span class="muted">-</span>`;
+      } else if(required>0 && shortfall>0){
+        cellHtml = `<span class="pill pill-notsent">×${quantity} (ขาด ${shortfall})</span>`;
+      } else {
+        cellHtml = `<span class="pill pill-sent">✅ ×${quantity}</span>`;
+      }
+      return `<td class="center">${cellHtml}</td>`;
+    }).join('');
+    return `<tr><td>${escapeHtml(m.name)}</td><td class="center">${moneyCell}</td>${itemCells}</tr>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>สรุปของทั้งหมด</h3><span class="muted">${escapeHtml(date)}</span></div>
+      <p class="muted" style="margin-bottom:10px;">แสดงเฉพาะสมาชิกและรายการของที่ยืนยันการส่งแล้วในวันนี้</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>สมาชิก</th><th class="center">💰 เงิน</th>${itemCols}</tr></thead>
+          <tbody>${rows || `<tr><td colspan="${2+displayItemDefs.length}" class="muted">ยังไม่มีใครยืนยันการส่งของหรือส่งเงินในวันนี้</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function getMoneyItemKey(){
+  const it = state.itemDefs.find(i=>i.name === 'เงิน');
+  return it ? it.key : 'money';
+}
+function borrowedMoneyTotal(){
+  const moneyKey = getMoneyItemKey();
+  return state.borrowRecords
+    .filter(r=>r.itemKey===moneyKey && !r.returned)
+    .reduce((s,r)=>s+Number(r.quantity||0),0);
+}
+function borrowedQtyForItem(itemKey){
+  return state.borrowRecords
+    .filter(r=>r.itemKey===itemKey && !r.returned)
+    .reduce((s,r)=>s+Number(r.quantity||0),0);
+}
+function borrowedMoneyRecordsTotal(){
+  return state.borrowMoneyRecords
+    .filter(r=>!r.returned)
+    .reduce((s,r)=>s+Number(r.amount||0),0);
+}
+
+/* ================= BORROW MONEY (ยืมเงิน จากเงินแก๊งค์) ================= */
+function renderBorrowMoney(){
+  const canPickMember = state.isAdmin;
+  const memberOptions = state.members.map(m=>`<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+
+  const formHtml = state.members.length ? `
+    <div class="inline-form" style="align-items:flex-end;">
+      ${canPickMember ? `
+        <div class="field">
+          <label>ผู้ยืม</label>
+          <select class="input" id="borrowMoneyMemberSelect">${memberOptions}</select>
+        </div>
+      ` : `
+        <div class="field">
+          <label>ผู้ยืม</label>
+          <input class="input" value="${escapeHtml(state.currentMember ? state.currentMember.name : '')}" disabled>
+        </div>
+      `}
+      <div class="field">
+        <label>จำนวนเงินที่ยืม (บาท)</label>
+        <input type="number" min="1" value="100" class="input" id="borrowMoneyAmountInput">
+      </div>
+      <div class="field" style="max-width:170px;">
+        <label>วันที่ยืม</label>
+        <input type="date" class="input" id="borrowMoneyDateInput" value="${todayStr()}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="btnSubmitBorrowMoney" style="margin-top:10px;">บันทึกการยืมเงิน</button>
+  ` : `<div class="empty-state">ยังไม่มีสมาชิกในระบบ</div>`;
+
+  const records = state.borrowMoneyRecords.slice().sort((a,b)=>{
+    const da = a.borrowDate||''; const db_ = b.borrowDate||'';
+    if(da !== db_) return da < db_ ? 1 : -1;
+    return (b.createdAtMs||0) - (a.createdAtMs||0);
+  });
+
+  const rows = records.map(r=>{
+    return `
+      <div class="member-row">
+        <div class="member-name">
+          ${avatarHtml(state.members.find(m=>m.id===r.memberId) || {name:r.memberName})}
+          <div>
+            <div>${escapeHtml(r.memberName)}</div>
+            <div class="muted" style="font-size:11.5px;">ยืมเงิน ${fmtMoney(r.amount||0)} บาท — ยืมวันที่ ${escapeHtml(r.borrowDate||'')}</div>
+          </div>
+        </div>
+        <div class="row-actions">
+          <span class="pill ${r.returned?'pill-sent':'pill-notsent'} ${state.isAdmin?'clickable':''}" ${state.isAdmin?`data-toggle-money-return="${r.id}"`:''}>
+            ${r.returned ? '✅ คืนแล้ว' : '❌ ยังไม่คืน'}
+          </span>
+          ${state.isAdmin ? `<button class="btn btn-danger btn-sm" data-delete-borrow-money="${r.id}">ลบ</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const totalBorrowed = borrowedMoneyRecordsTotal();
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ยืมเงิน จากเงินแก๊งค์</h3></div>
+      ${formHtml}
+      <p class="muted" style="margin-top:10px;">ยอดเงินที่ยืมแล้วยังไม่คืนจะถูกหักออกจากยอดรวมในหน้า "เงินแก๊งค์" โดยอัตโนมัติ${totalBorrowed>0 ? ` — ตอนนี้ถูกยืมอยู่รวม ${fmtMoney(totalBorrowed)} บาท` : ''}</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">รายการยืมเงินทั้งหมด</h3>
+      <div class="row-list">${rows || '<div class="empty-state">ยังไม่มีรายการยืมเงิน</div>'}</div>
+    </div>
+  `;
+}
+function attachBorrowMoneyEvents(){
+  const btnSubmit = document.getElementById('btnSubmitBorrowMoney');
+  if(btnSubmit) btnSubmit.addEventListener('click', submitBorrowMoney);
+  document.querySelectorAll('[data-toggle-money-return]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      toggleBorrowMoneyReturned(el.dataset.toggleMoneyReturn);
+    });
+  });
+  document.querySelectorAll('[data-delete-borrow-money]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      deleteBorrowMoneyRecord(btn.dataset.deleteBorrowMoney);
+    });
+  });
+}
+function submitBorrowMoney(){
+  const amount = Math.max(1, Math.floor(Number(document.getElementById('borrowMoneyAmountInput').value)||0));
+  const borrowDate = document.getElementById('borrowMoneyDateInput').value || todayStr();
+  let memberId, member;
+  if(state.isAdmin){
+    memberId = document.getElementById('borrowMoneyMemberSelect').value;
+    member = state.members.find(m=>m.id===memberId);
+  } else {
+    member = state.currentMember;
+    memberId = member ? member.id : null;
+  }
+  if(!member || amount<=0) return;
+  db.collection('tools').add({
+    type:'borrowMoneyRecord', memberId, memberName: member.name,
+    amount, borrowDate, returned:false,
+    createdAtMs: Date.now(),
+    createdAt: FieldValue.serverTimestamp()
+  }).then(()=>{
+    logHistory('ยืมเงินจากเงินแก๊งค์', `${member.name} ยืมเงิน ${fmtMoney(amount)} บาท วันที่ ${borrowDate}`);
+    showToast('บันทึกการยืมเงินแล้ว');
+  });
+}
+function toggleBorrowMoneyReturned(id){
+  const rec = state.borrowMoneyRecords.find(r=>r.id===id);
+  if(!rec) return;
+  const newReturned = !rec.returned;
+  db.collection('tools').doc(id).update({returned:newReturned}).then(()=>{
+    logHistory('อัปเดตสถานะการคืนเงิน', `${rec.memberName} — ${fmtMoney(rec.amount||0)} บาท → ${newReturned?'คืนแล้ว':'ยังไม่คืน'}`);
+  });
+}
+function deleteBorrowMoneyRecord(id){
+  const rec = state.borrowMoneyRecords.find(r=>r.id===id);
+  if(!rec) return;
+  db.collection('tools').doc(id).delete().then(()=>{
+    logHistory('ลบรายการยืมเงิน', `ลบ: ${rec.memberName} — ${fmtMoney(rec.amount||0)} บาท`);
+    showToast('ลบรายการยืมเงินแล้ว');
+  });
+}
+
+/* ================= BORROW (ยืมของกลางแก๊งค์) ================= */
+function renderBorrow(){
+  const canPickMember = state.isAdmin;
+  const memberOptions = state.members.map(m=>`<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+  const moneyKey = getMoneyItemKey();
+  const borrowableItemDefs = state.itemDefs.filter(it => it.key !== moneyKey);
+  const itemOptions = borrowableItemDefs.map(it=>`<option value="${it.key}">${escapeHtml(it.name)}</option>`).join('');
+
+  const formHtml = borrowableItemDefs.length ? `
+    <div class="inline-form" style="align-items:flex-end;">
+      ${canPickMember ? `
+        <div class="field">
+          <label>ผู้ยืม</label>
+          <select class="input" id="borrowMemberSelect">${memberOptions}</select>
+        </div>
+      ` : `
+        <div class="field">
+          <label>ผู้ยืม</label>
+          <input class="input" value="${escapeHtml(state.currentMember ? state.currentMember.name : '')}" disabled>
+        </div>
+      `}
+      <div class="field">
+        <label>รายการของ</label>
+        <select class="input" id="borrowItemSelect">${itemOptions}</select>
+      </div>
+      <div class="field" style="max-width:110px;">
+        <label>จำนวน</label>
+        <input type="number" min="1" value="1" class="input" id="borrowQtyInput">
+      </div>
+      <div class="field" style="max-width:170px;">
+        <label>วันที่ยืม</label>
+        <input type="date" class="input" id="borrowDateInput" value="${todayStr()}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="btnSubmitBorrow" style="margin-top:10px;">บันทึกการยืม</button>
+  ` : `<div class="empty-state">ยังไม่มีรายการของให้ยืม กรุณาให้ผู้ดูแลระบบเพิ่มรายการของก่อน</div>`;
+
+  const records = state.borrowRecords.slice().sort((a,b)=>{
+    const da = a.borrowDate||''; const db_ = b.borrowDate||'';
+    if(da !== db_) return da < db_ ? 1 : -1;
+    return (b.createdAtMs||0) - (a.createdAtMs||0);
+  });
+
+  const rows = records.map(r=>{
+    const canManage = state.isAdmin;
+    return `
+      <div class="member-row">
+        <div class="member-name">
+          ${avatarHtml(state.members.find(m=>m.id===r.memberId) || {name:r.memberName})}
+          <div>
+            <div>${escapeHtml(r.memberName)}</div>
+            <div class="muted" style="font-size:11.5px;">${escapeHtml(r.itemName)} ×${Number(r.quantity||0)} — ยืมวันที่ ${escapeHtml(r.borrowDate||'')}</div>
+          </div>
+        </div>
+        <div class="row-actions">
+          <span class="pill ${r.returned?'pill-sent':'pill-notsent'} ${canManage?'clickable':''}" ${canManage?`data-toggle-return="${r.id}"`:''}>
+            ${r.returned ? '✅ คืนแล้ว' : '❌ ยังไม่คืน'}
+          </span>
+          ${state.isAdmin ? `<button class="btn btn-danger btn-sm" data-delete-borrow="${r.id}">ลบ</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ยืมของกลางแก๊งค์</h3></div>
+      ${formHtml}
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px;">รายการยืมทั้งหมด</h3>
+      <div class="row-list">${rows || '<div class="empty-state">ยังไม่มีรายการยืม</div>'}</div>
+    </div>
+  `;
+}
+function attachBorrowEvents(){
+  const btnSubmit = document.getElementById('btnSubmitBorrow');
+  if(btnSubmit) btnSubmit.addEventListener('click', submitBorrow);
+  document.querySelectorAll('[data-toggle-return]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      toggleBorrowReturned(el.dataset.toggleReturn);
+    });
+  });
+  document.querySelectorAll('[data-delete-borrow]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      deleteBorrowRecord(btn.dataset.deleteBorrow);
+    });
+  });
+}
+function submitBorrow(){
+  const itemKey = document.getElementById('borrowItemSelect').value;
+  const itemDef = state.itemDefs.find(i=>i.key===itemKey);
+  const qty = Math.max(1, Math.floor(Number(document.getElementById('borrowQtyInput').value)||1));
+  const borrowDate = document.getElementById('borrowDateInput').value || todayStr();
+  let memberId, member;
+  if(state.isAdmin){
+    memberId = document.getElementById('borrowMemberSelect').value;
+    member = state.members.find(m=>m.id===memberId);
+  } else {
+    member = state.currentMember;
+    memberId = member ? member.id : null;
+  }
+  if(!member || !itemDef) return;
+  db.collection('tools').add({
+    type:'borrowRecord', memberId, memberName: member.name,
+    itemKey, itemName: itemDef.name, quantity: qty,
+    borrowDate, returned:false,
+    createdAtMs: Date.now(),
+    createdAt: FieldValue.serverTimestamp()
+  }).then(()=>{
+    logHistory('ยืมของกลางแก๊งค์', `${member.name} ยืม ${itemDef.name} จำนวน ${qty} วันที่ ${borrowDate}`);
+    showToast('บันทึกการยืมแล้ว');
+  });
+}
+function toggleBorrowReturned(id){
+  const rec = state.borrowRecords.find(r=>r.id===id);
+  if(!rec) return;
+  const newReturned = !rec.returned;
+  db.collection('tools').doc(id).update({returned:newReturned}).then(()=>{
+    logHistory('อัปเดตสถานะการคืนของ', `${rec.memberName} — ${rec.itemName} ×${rec.quantity} → ${newReturned?'คืนแล้ว':'ยังไม่คืน'}`);
+  });
+}
+function deleteBorrowRecord(id){
+  const rec = state.borrowRecords.find(r=>r.id===id);
+  if(!rec) return;
+  db.collection('tools').doc(id).delete().then(()=>{
+    logHistory('ลบรายการยืมของ', `ลบ: ${rec.memberName} — ${rec.itemName} ×${rec.quantity}`);
+    showToast('ลบรายการยืมแล้ว');
+  });
+}
+
+/* ================= HISTORY ================= */
+function renderHistory(){
+  const items = state.history.map(h=>`
+    <div class="history-item">
+      <div class="history-top"><span class="history-actor">${escapeHtml(h.actor)}</span><span class="history-time">${fmtTimestamp(h.ts)}</span></div>
+      <div class="history-detail">${escapeHtml(h.action)}${h.detail ? ' — ' + escapeHtml(h.detail) : ''}</div>
+    </div>
+  `).join('');
+  return `
+    <div class="card">
+      <div class="card-head"><h3>ประวัติการแก้ไข</h3><span class="muted">ล่าสุด ${state.history.length} รายการ</span></div>
+      ${items || '<div class="empty-state">ยังไม่มีประวัติ</div>'}
+    </div>
+  `;
+}
+
+/* ---------------- modal helpers ---------------- */
+function openModal(html){
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal(){
+  state.manageItemsModalOpen = false;
+  state.manageWeaponsModalOpen = false;
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.getElementById('modalBody').innerHTML = '';
+}
+document.getElementById('modalOverlay').addEventListener('click', e=>{
+  if(e.target.id==='modalOverlay') closeModal();
+});
+</script>
+</body>
+</html>
